@@ -1,0 +1,7 @@
+fastapi
+starlette
+tensorflow
+numpy
+opencv-python-headless
+redis
+pillow
