@@ -3,7 +3,7 @@ FROM python:3.9
 
 # Installation des dépendances
 WORKDIR /app
-COPY ./model.h5 /app/model.h5
+#COPY ./model.h5 /app/model.h5
 COPY api.py /app/api.py
 RUN pip install fastapi uvicorn redis tensorflow opencv-python-headless pillow python-multipart
 
