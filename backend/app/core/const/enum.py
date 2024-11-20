@@ -44,4 +44,32 @@ class ENUM_ENDPOINT_MODEL(e):
 
 class ENUM_ENDPOINT_USER(e):
     pass
+
+class ENUM_TABLE_DB(e):
+    USER: str = "users"
+    QUOTAS: str = "quotas"
+    HISTORY: str = "histories"
+    ROLE: str = "role"
+
+class ENUM_COLUMN_TABLE_USER(e):
+    PSEUDO: str = "pseudo"
+    EMAIL : str = "email"
+    PWD_HASH : str = "password_hash"
+    ROLE_ID : str = "role_ids"
     
+class ENUM_COLUMN_TABLE_QUOTAS(e):
+    USER_ID: str = "user_id"
+    DAILY_LIMIT: str = "daily_limit"
+    REQUESTS_MADE : str = "requests_made"
+    RESET_AT : str = "reset_at"
+    
+class ENUM_COLUMN_TABLE_HISTORY(e):
+    pass
+
+class ENUM_MODEL_NAME(e):
+    USER: str = "Model_USER"
+    ROLE: str = "Model_ROLE"
+    
+class ENUM_ROLE(e):
+    ADMIN = "ADMIN"
+    USER = "USER"
