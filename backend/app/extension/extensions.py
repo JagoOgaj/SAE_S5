@@ -3,7 +3,7 @@ from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from passlib.context import CryptContext
 from sqlalchemy.orm import declarative_base
-from core import Decorators
+from backend.app.core import Decorators
 
 type Extension = Extensions
 

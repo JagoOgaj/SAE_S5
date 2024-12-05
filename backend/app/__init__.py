@@ -1,6 +1,6 @@
 from flask import Flask
 from dotenv import load_dotenv
-from core import (
+from backend.app.core import (
     ENUM_DB_ENV,
     ENUM_FLASK_ENV,
     ENUM_JWT_ENV,
@@ -8,8 +8,8 @@ from core import (
     ENUM_URL_PREFIX
 )
 from flask_cors import CORS
-from extension import ext
-from controllers import (
+from backend.app.extension import ext
+from backend.app.controllers import (
     bp_user,
     bp_auth,
     bp_admin,
@@ -33,8 +33,8 @@ class Config:
     # JWT #
     JWT_SECRET_KEY = os.environ.get(ENUM_JWT_ENV.SECRET_KEY.value)
     JWT_IDENTITY_CLAIM = os.environ.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)
-    JWT_TOKEN_LOCATION = [os.environ.get(ENUM_JWT_ENV.TOKEN_LOCATION)]
-    JWT_ACCESS_TOKEN_EXPIRES = int(os.environ.get(ENUM_JWT_ENV.TOKEN_LOCATION.value))
+    JWT_TOKEN_LOCATION = [os.environ.get(ENUM_JWT_ENV.TOKEN_LOCATION.value)]
+    JWT_ACCESS_TOKEN_EXPIRES = int(os.environ.get(ENUM_JWT_ENV.ACCESS_TOKEN_EXPIRES.value))
 
 
 class App:
@@ -48,7 +48,7 @@ class App:
         app.config.from_object(Config)
         
         # Cors #
-        CORS(app, resources=ENUM_CORS.RESSOURCE)
+        CORS(app, resources=ENUM_CORS.RESSOURCE.value)
         
         # Extensions #
         ext.db_ext.init_app(app)
