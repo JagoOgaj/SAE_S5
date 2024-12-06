@@ -12,9 +12,4 @@ class Decorators:
             return instances[class_]
 
         return getinstance
-
-    @staticmethod
-    def has_quotas(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            pass
+    

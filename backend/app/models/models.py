@@ -18,13 +18,11 @@ from core import (
     ENUM_COLUMN_TABLE_CONVERSATION,
     ENUM_COLUMN_TABLE_CONVERSATION_IMAGES,
     ENUM_COLUMN_TABLE_CONVERSATION_MESSAGE,
-    ENUM_COLUMN_TABLE_QUOTAS,
     ENUM_ON_ACTION,
     ENUM_RELATIONSHIP,
     ENUM_FOREIGN_KEY,
     ENUM_MESSAGE_TYPE,
     ENUM_CONTRAINT,
-    ENUM_DEFAULT_QUOTA,
     get_paris_time,
 )
 from sqlalchemy.orm import relationship
@@ -56,11 +54,6 @@ class Model_USER(ext.db_ext.Model):
         ENUM_MODEL_NAME.CONVERSATION.value,
         back_populates=ENUM_TABLE_DB.CONVERSATION.value,
         cascade=ENUM_RELATIONSHIP.CASCADE.value,
-    )
-    quota = relationship(
-        ENUM_MODEL_NAME.QUOTA.value,
-        uselist=False,
-        back_populates=ENUM_TABLE_DB.USER.value,
     )
 
     @hybrid_property
@@ -325,75 +318,3 @@ class Model_CONVERSATION_IMAGES(ext.db_ext.Model):
     @created_at.setter
     def created_at(self: Self, value) -> None:
         self._created_at = value
-
-
-class Model_QUOTA(ext.db_ext.Model):
-    __tablename__ = ENUM_TABLE_DB.QUOTAS.value
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    _user_id = Column(
-        Integer,
-        ForeignKey(ENUM_FOREIGN_KEY.USER.value, ondelete=ENUM_ON_ACTION.CASCADE.value),
-        nullable=False,
-    )
-    _daily_quota = Column(
-        Integer,
-        name=ENUM_COLUMN_TABLE_QUOTAS.DAYLI_QUOTA.value,
-        nullable=False,
-        default=ENUM_DEFAULT_QUOTA.DEFAULT_DAILY_QUOTA.value,
-    )
-    _used_quota = Column(
-        Integer,
-        name=ENUM_COLUMN_TABLE_QUOTAS.USED_QUOTA.value,
-        nullable=False,
-        default=ENUM_DEFAULT_QUOTA.DEFAULT_USED_QUOTA.value,
-    )
-    _created_at = Column(
-        TIMESTAMP,
-        name=ENUM_COLUMN_TABLE_QUOTAS.CREATED_AT.value,
-        default=get_paris_time,
-    )
-    _updated_at = Column(
-        TIMESTAMP,
-        name=ENUM_COLUMN_TABLE_QUOTAS.CREATED_AT.value,
-        default=get_paris_time,
-        onupdate=get_paris_time,
-    )
-
-    user = relationship(
-        ENUM_MODEL_NAME.USER.value, back_populates=ENUM_TABLE_DB.QUOTAS.value
-    )
-
-    __table_args__ = (
-        CheckConstraint(
-            ENUM_CONTRAINT.QUOTA_DAILY.value[0],
-            name=ENUM_CONTRAINT.QUOTA_DAILY.value[1],
-        ),
-        CheckConstraint(
-            ENUM_CONTRAINT.QUOTA_USED.value[0], name=ENUM_CONTRAINT.QUOTA_USED.value[1]
-        ),
-    )
-
-    @hybrid_property
-    def user_id(self: Self) -> int:
-        return self._user_id
-
-    @user_id.setter
-    def user_id(self: Self, value: int) -> None:
-        self._user_id = value
-
-    @hybrid_property
-    def daily_quota(self: Self) -> int:
-        return self._daily_quota
-
-    @daily_quota.setter
-    def daily_quota(self: Self, value: int) -> None:
-        self._daily_quota = value
-
-    @hybrid_property
-    def used_quota(self: Self) -> int:
-        return self._used_quota
-
-    @used_quota.setter
-    def used_quota(self: Self, value: int) -> None:
-        self._used_quota = value

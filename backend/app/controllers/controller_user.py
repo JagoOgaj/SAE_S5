@@ -9,6 +9,3 @@ class Controller_USER:
 
 
 # TODO Add routes #
-@bp_user.route("/test", methods=["GET"])
-def test_user():
-    return jsonify({"message": "Route user OK"})

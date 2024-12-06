@@ -69,7 +69,7 @@ class ENUM_ENDPOINT_ADMIN(e):
 
 
 class ENUM_ENDPOINT_AUTH(e):
-    pass
+    LOGIN: str = "/login"
 
 
 class ENUM_ENDPOINT_MODEL(e):
@@ -80,6 +80,12 @@ class ENUM_ENDPOINT_USER(e):
     pass
 
 
+class ENUM_METHODS(e):
+    POST: str = "POST"
+    GET: str = "GET"
+    PUT: str = "PUT"
+    DELETE: str = "DELETE" 
+
 ############################################################
 #                                                          #
 #                       DB-ENUM                            #
@@ -89,7 +95,6 @@ class ENUM_ENDPOINT_USER(e):
 
 class ENUM_TABLE_DB(e):
     USER: str = "users"
-    QUOTAS: str = "quotas"
     CONVERSATION: str = "conversations"
     CONVERSATION_MESSAGES: str = "conversation_messages"
     CONVERSATION_IMAGES: str = "conversation_images"
@@ -127,15 +132,6 @@ class ENUM_COLUMN_TABLE_CONVERSATION_IMAGES(e):
     IMAGE_DATA: str = "image_data"
     IMAGE_SIZE: str = "image_size"
     CREATED_AT: str = "created_at"
-
-
-class ENUM_COLUMN_TABLE_QUOTAS(e):
-    USER_ID: str = "user_id"
-    DAYLI_QUOTA: str = "daily_quota"
-    USED_QUOTA: str = "used_quota"
-    CREATED_AT: str = "created_at"
-    UPDATE_AT: str = "updated_at"
-
 
 class ENUM_FOREIGN_KEY(e):
     ROLE: str = f"{ENUM_TABLE_DB.ROLE.value}.id"
@@ -189,10 +185,22 @@ class ENUM_MESSAGE_TYPE(e):
     AI: str = "AI"
 
 
-class ENUM_DEFAULT_QUOTA(e):
-    DEFAULT_DAILY_QUOTA: int = 100
-    DEFAULT_USED_QUOTA: int = 0
-
-
 class ENUM_TIMEZONE(e):
     TIMEZONE_PARIS: str = "Europe/Paris"
+
+
+
+############################################################
+#                                                          #
+#                       Schema Enum                        #
+#                                                          #
+############################################################
+
+class ENUM_LOGIN_SCHEMA(e):
+    EMAIL_PATERN: str = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+    EMAIL_EMPTY_ERROR_MESSAGE: str = "L'email est requis et ne peut pas être vide."
+    EMAIL_REGEX_ERROR_MESSAGE: str = "Format d'email invalide."
+    
+    
+    PASSWORD_ERROR: str = "Format d'email invalide."
+    

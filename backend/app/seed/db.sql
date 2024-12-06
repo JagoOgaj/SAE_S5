@@ -45,17 +45,6 @@ CREATE TABLE conversation_images (
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 );
 
-CREATE TABLE quotas (
-    id SERIAL PRIMARY KEY,               
-    user_id INTEGER NOT NULL,            
-    daily_quota INTEGER NOT NULL,        
-    used_quota INTEGER DEFAULT 0,        
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CHECK (daily_quota >= 0),            
-    CHECK (used_quota >= 0)            
-);
 
 
 CREATE INDEX idx_conversations_user_id ON conversations (user_id);  

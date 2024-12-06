@@ -8,8 +8,12 @@ from backend.app.core import (
     ENUM_URL_PREFIX,
 )
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from backend.app.extension import ext
 from backend.app.controllers import bp_user, bp_auth, bp_admin, bp_model
+from backend.app.core.decorator import Decorators
+from typing import Callable
 import os
 
 load_dotenv()
@@ -57,3 +61,20 @@ class App:
         app.register_blueprint(bp_model, url_prefix=ENUM_URL_PREFIX.MODEL.value)
 
         return app
+
+@Decorators.singleton
+class Quotas:
+    def __init__(self, app: Flask, func: Callable[..., str]) -> None:
+        self._limiter = Limiter(app, key_func=func)
+        
+    @property
+    def limiter(self) -> Limiter:
+        return self._limiter
+    
+    @limiter.setter
+    def limiter(self, limiter: Limiter) -> None:
+        self._limiter = limiter
+        
+
+app: Flask = App.create_app()
+quotas: Quotas = Quotas(app, get_remote_address)
