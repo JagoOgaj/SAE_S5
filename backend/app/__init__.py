@@ -62,19 +62,20 @@ class App:
 
         return app
 
+
 @Decorators.singleton
 class Quotas:
     def __init__(self, app: Flask, func: Callable[..., str]) -> None:
         self._limiter = Limiter(app, key_func=func)
-        
+
     @property
     def limiter(self) -> Limiter:
         return self._limiter
-    
+
     @limiter.setter
     def limiter(self, limiter: Limiter) -> None:
         self._limiter = limiter
-        
+
 
 app: Flask = App.create_app()
 quotas: Quotas = Quotas(app, get_remote_address)

@@ -1,3 +1,9 @@
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS roles CASCADE;
+DROP TABLE IF EXISTS conversations CASCADE;
+DROP TABLE IF EXISTS conversation_messages CASCADE;
+DROP TABLE IF EXISTS conversation_images CASCADE;
+DROP TABLE IF EXISTS token_block_list CASCADE;
 
 CREATE TYPE role_enum AS ENUM ('ADMIN', 'USER');
 
@@ -45,7 +51,14 @@ CREATE TABLE conversation_images (
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 );
 
-
+CREATE TABLE token_block_list (
+    id SERIAL PRIMARY KEY,                                       
+    jti VARCHAR NOT NULL UNIQUE,                                 
+    token_type VARCHAR NOT NULL,                                 
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE, 
+    revoked_at TIMESTAMP,                                        
+    expires TIMESTAMP NOT NULL                                  
+);
 
 CREATE INDEX idx_conversations_user_id ON conversations (user_id);  
 CREATE UNIQUE INDEX roles_name_lower_idx ON roles (LOWER(name));

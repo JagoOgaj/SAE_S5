@@ -12,4 +12,3 @@ class Decorators:
             return instances[class_]
 
         return getinstance
-    

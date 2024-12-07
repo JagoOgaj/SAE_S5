@@ -84,7 +84,8 @@ class ENUM_METHODS(e):
     POST: str = "POST"
     GET: str = "GET"
     PUT: str = "PUT"
-    DELETE: str = "DELETE" 
+    DELETE: str = "DELETE"
+
 
 ############################################################
 #                                                          #
@@ -99,6 +100,7 @@ class ENUM_TABLE_DB(e):
     CONVERSATION_MESSAGES: str = "conversation_messages"
     CONVERSATION_IMAGES: str = "conversation_images"
     ROLE: str = "roles"
+    TOKEN_BLOCK_LIST: str = "token_block_list"
 
 
 class ENUM_COLUMN_TABLE_ROLE(e):
@@ -133,6 +135,16 @@ class ENUM_COLUMN_TABLE_CONVERSATION_IMAGES(e):
     IMAGE_SIZE: str = "image_size"
     CREATED_AT: str = "created_at"
 
+
+class ENUM_COLUMN_TABLE_TOKEN_BLOCK_LIST(e):
+    ID: str = "id"
+    JTI: str = "jti"
+    TOKEN_TYPE: str = "token_type"
+    USER_ID: str = "user_id"
+    REVOKED_AT: str = "revoked_at"
+    EXPIRES: str = "expires"
+
+
 class ENUM_FOREIGN_KEY(e):
     ROLE: str = f"{ENUM_TABLE_DB.ROLE.value}.id"
     USER: str = f"{ENUM_TABLE_DB.USER.value}.id"
@@ -164,7 +176,7 @@ class ENUM_CONTRAINT(e):
 class ENUM_MODEL_NAME(e):
     USER: str = "Model_USER"
     ROLE: str = "Model_ROLE"
-    QUOTA: str = "Model_QUOTA"
+    TOKEN_BLOCK_LIST: str = "Model_TOKEN_BLOCK_LIST"
     CONVERSATION: str = "Model_CONVERSATION"
     CONVERSATION_MESSAGE: str = "Model_CONVERSATION_MESSAGE"
     CONVERSATION_IMAGE: str = "Model_CONVERSATION_IMAGE"
@@ -175,6 +187,8 @@ class ENUM_MODEL_NAME(e):
 #                          ENUM                            #
 #                                                          #
 ############################################################
+
+
 class ENUM_ROLE(e):
     ADMIN = "ADMIN"
     USER = "USER"
@@ -189,6 +203,26 @@ class ENUM_TIMEZONE(e):
     TIMEZONE_PARIS: str = "Europe/Paris"
 
 
+class ENUM_DECODED_TOKEN_KEY(e):
+    JTI: str = "jti"
+    TYPE: str = "type"
+    EXP: str = "exp"
+
+
+class ENUM_FILTERS_USER(e):
+    FILTERS: list[str] = ["id", "_pseudo", "_email", "_role_id"]
+
+
+class ENUM_FILTERS_TOKEN(e):
+    FILTERS: list[str] = [
+        "id",
+        "jti",
+        "token_type",
+        "user_id",
+        "revoked_at",
+        "exxpires",
+    ]
+
 
 ############################################################
 #                                                          #
@@ -196,11 +230,10 @@ class ENUM_TIMEZONE(e):
 #                                                          #
 ############################################################
 
+
 class ENUM_LOGIN_SCHEMA(e):
     EMAIL_PATERN: str = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
     EMAIL_EMPTY_ERROR_MESSAGE: str = "L'email est requis et ne peut pas être vide."
     EMAIL_REGEX_ERROR_MESSAGE: str = "Format d'email invalide."
-    
-    
+
     PASSWORD_ERROR: str = "Format d'email invalide."
-    

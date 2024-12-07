@@ -8,6 +8,7 @@ from sqlalchemy import (
     TEXT,
     LargeBinary,
     CheckConstraint,
+    DateTime,
 )
 from core import (
     ENUM_COLUMN_TABLE_USER,
@@ -318,3 +319,18 @@ class Model_CONVERSATION_IMAGES(ext.db_ext.Model):
     @created_at.setter
     def created_at(self: Self, value) -> None:
         self._created_at = value
+
+
+class Model_TOKEN_BLOCK_LIST(ext.db_ext.Model):
+    __tablename__ = ENUM_TABLE_DB.TOKEN_BLOCK_LIST.value
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    jti = Column(String, nullable=False, unique=True)
+    token_type = Column(String, nullable=False)
+    user_id = Column(
+        Integer, ForeignKey(ENUM_FOREIGN_KEY.USER.value), nullable=False, index=True
+    )
+    revoked_at = Column(DateTime)
+    expires = Column(DateTime, nullable=False)
+
+    user = relationship(ENUM_MODEL_NAME.USER.value)
