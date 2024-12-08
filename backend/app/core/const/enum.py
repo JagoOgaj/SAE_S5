@@ -70,6 +70,11 @@ class ENUM_ENDPOINT_ADMIN(e):
 
 class ENUM_ENDPOINT_AUTH(e):
     LOGIN: str = "/login"
+    REGISTRY: str = "/registry/<string:type>"
+    LOGOUT: str = "/logout"
+    REFRESH_TOKEN: str = "/refresh"
+    REVOKE_ACCESS_TOKEN: str = "/revoke_access"
+    REVOKE_REFRESH_TOKEN: str = "/revoke_refresh"
 
 
 class ENUM_ENDPOINT_MODEL(e):
@@ -212,6 +217,8 @@ class ENUM_DECODED_TOKEN_KEY(e):
 class ENUM_FILTERS_USER(e):
     FILTERS: list[str] = ["id", "_pseudo", "_email", "_role_id"]
 
+class ENUM_FIELDS_USER(e):
+    FIELDS: list[str] = ['email', 'pseudo', 'password']
 
 class ENUM_FILTERS_TOKEN(e):
     FILTERS: list[str] = [

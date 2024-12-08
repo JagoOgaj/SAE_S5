@@ -38,12 +38,11 @@ class Service_JWT:
             service_db.commit_to_db()
 
         except NoResultFound as e:
-            print(
-                f"Aucun token trouver avec token_jti = {token_jti}, user_id = {user_id} - \n {e}"
-            )
+            raise NoResultFound(f"Aucun token trouver avec token_jti = {token_jti}, user_id = {user_id} - \n {e}")
+            
 
         except Exception as e:
-            print(f"Une erreur est survenu - \n {e}")
+            raise Exception(f"Une erreur est survenu - \n {e}")
 
     def is_token_revoked(jwt_payload) -> bool:
         jti = jwt_payload[ENUM_DECODED_TOKEN_KEY.JTI.value]
@@ -92,3 +91,9 @@ def check_if_token_revoked(jwt_headers, jwt_payload):
         return False
     except Exception:
         return True
+
+@ext.jwt_ext.user_lookup_loader
+def user_loader_callback(jwt_header, jwt_payload):
+    return service_db.find_user_by_filters(id=jwt_payload[
+                    SAE_S5_BACKEND.config.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)
+                ])

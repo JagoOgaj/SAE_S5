@@ -62,3 +62,7 @@ CREATE TABLE token_block_list (
 
 CREATE INDEX idx_conversations_user_id ON conversations (user_id);  
 CREATE UNIQUE INDEX roles_name_lower_idx ON roles (LOWER(name));
+
+INSERT INTO roles (name) VALUES 
+    ('ADMIN'), 
+    ('USER');
