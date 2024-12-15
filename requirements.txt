@@ -10,3 +10,8 @@ python-dotenv
 flask-cors
 pytz
 flask-limiter
+tensorflow
+numpy
+pillow
+opencv-python
+scikit-learn

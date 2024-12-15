@@ -68,3 +68,8 @@ class FilterTokenMissingError(FilterMissingError):
             details=f"Filtres valables : {', '.join(missing_filter)}",
         )
 
+class ModelTypeNotFoundError(Exception):
+    def __init__(self, modelType: str) -> None:
+        super().__init__(
+            f"Ce type de model '{modelType}' ne correspond à aucun type connue"
+        )

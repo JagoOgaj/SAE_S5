@@ -1,8 +1,6 @@
 from marshmallow import Schema, ValidationError, fields, validates
 from backend.app.core.const.enum import ENUM_LOGIN_SCHEMA
-
 import re
-
 
 class LoginSchema(Schema):
     email_fields: str = "email"

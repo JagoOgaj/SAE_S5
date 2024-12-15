@@ -78,8 +78,8 @@ class ENUM_ENDPOINT_AUTH(e):
 
 
 class ENUM_ENDPOINT_MODEL(e):
-    pass
-
+    TRIALS: str = "/trials/<string:typeModel>"
+    PREDICT: str = "/predict/<string:typeModel>"
 
 class ENUM_ENDPOINT_USER(e):
     pass
@@ -244,3 +244,19 @@ class ENUM_LOGIN_SCHEMA(e):
     EMAIL_REGEX_ERROR_MESSAGE: str = "Format d'email invalide."
 
     PASSWORD_ERROR: str = "Format d'email invalide."
+
+
+
+############################################################
+#                                                          #
+#                     Model Type Enum                      #
+#                                                          #
+############################################################
+
+class ENUM_MODELS_TYPE(e):
+    GENDER_SCRATCH: str = "gs"
+    AGE_SCRATCH: str = "as"
+    GENDER_AND_AGE_SCRATCH: str = "gas"
+    GENDER_AND_AGE_TRANSFER: str = "gat" # sous steorïde
+
+    
