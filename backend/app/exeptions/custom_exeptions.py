@@ -60,7 +60,6 @@ class FilterUserMissingError(FilterMissingError):
             details=f"Filtres valables : {', '.join(missing_filter)}",
         )
 
-
 class FilterTokenMissingError(FilterMissingError):
     def __init__(self, missing_filter):
         super().__init__(
@@ -72,4 +71,28 @@ class ModelTypeNotFoundError(Exception):
     def __init__(self, modelType: str) -> None:
         super().__init__(
             f"Ce type de model '{modelType}' ne correspond à aucun type connue"
+        )
+
+class ConversationNotFoundError(Exception):
+    def __init__(self, conversationId: int) -> None:
+        super().__init__(
+            f"L'id fournis {conversationId} ne correspond à aucune conversation"
+        )
+
+class ConversationMessagesNotFound(Exception):
+    def __init__(self, conversatationId: int) -> None:
+        super().__init__(
+            f"Aucun message trouvée pour la conversation {conversatationId}"
+        )
+
+class ConversationImagesNotFound(Exception):
+    def __init__(self, conversationId: int) -> None:
+        super().__init__(
+            f"Aucune image trouvée pour la conversation {conversationId}"
+        )
+
+class NotAllowedToAccessThisConversationError(Exception):
+    def __init__(self, conversationId: int) -> None:
+        super().__init__(
+            f"Vous ne pouvez pas accéder à la conversation id = {conversationId} car ce n'est pas la votre"
         )

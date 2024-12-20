@@ -16,8 +16,7 @@ from backend.app.services import (
     service_jwt
 )
 
-@Decorators.singleton
-class Service_AUTH():
+class Service_AUTH:
     def __init__(self) -> None:
         pass
     

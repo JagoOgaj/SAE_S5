@@ -10,7 +10,6 @@ from sqlalchemy.exc import NoResultFound
 from backend.app.extension.extensions import ext
 
 
-@Decorators.singleton
 class Service_JWT:
     def __init__(self) -> None:
         pass
@@ -30,6 +29,7 @@ class Service_JWT:
         )
 
         service_db.add_to_db(db_token)
+        service_db.commit_to_db()
 
     def revoke_token(token_jti, user_id) -> None:
         try:

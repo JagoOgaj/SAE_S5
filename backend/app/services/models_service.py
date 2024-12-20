@@ -12,12 +12,14 @@ import tensorflow as tf
 from flask import (
     request
 )
-
-class Model_CNN():
+from flask_jwt_extended import (
+    get_jwt_identity
+)
+class Service_MODEL:
     _model = None
     _model2 = None
     def __init__(self: Self, typeModel: str) -> None:
-        if typeModel not in (l:=[
+        if typeModel not in ([
             ENUM_MODELS_TYPE.GENDER_AND_AGE_SCRATCH.value, 
             ENUM_MODELS_TYPE.GENDER_SCRATCH.value, 
             ENUM_MODELS_TYPE.AGE_SCRATCH.value, 
@@ -99,6 +101,11 @@ class Model_CNN():
         
     
 def get_quota_for_model() -> str:
+    user_identity = get_jwt_identity()
+
+    if not user_identity:
+        return "5 per day"
+    
     type_model = request.view_args.get('typeModel', None)
     match type_model:
         case ENUM_MODELS_TYPE.AGE_SCRATCH.value:

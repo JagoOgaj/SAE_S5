@@ -78,11 +78,14 @@ class ENUM_ENDPOINT_AUTH(e):
 
 
 class ENUM_ENDPOINT_MODEL(e):
-    TRIALS: str = "/trials/<string:typeModel>"
     PREDICT: str = "/predict/<string:typeModel>"
 
 class ENUM_ENDPOINT_USER(e):
-    pass
+    CONVERSTAION_OVERVIEW: str = "/conversation/overview"
+    CONVERSATION_TO_DELETE: str = "/conversations/<int:conversation_id>"
+    NEW_CONVERSATION: str = "/new-conversation/"
+    CONTINUE_CONVERSATION: str = "/update-conversation/<int:conversation_id>"
+    GET_CONVERSATION: str = "/conversation/<int:conversation_id>"
 
 
 class ENUM_METHODS(e):
