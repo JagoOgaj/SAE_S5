@@ -15,7 +15,11 @@ class ENUM_FLASK_ENV(e):
 
 
 class ENUM_DB_ENV(e):
-    URI: str = "SQLALCHEMY_DATABASE_URI"
+    DB_NAME: str = "MONGO_DB_NAME"
+    DB_HOST: str = "MONGO_HOST"
+    DB_PORT: str = "MONGO_PORT"
+    DB_USERNAME: str = "MONGO_USERNAME"
+    DB_PWD: str = "MONGO_USERNAME"
 
 
 class ENUM_JWT_ENV(e):
@@ -44,7 +48,6 @@ class ENUM_CORS(e):
 
 
 class ENUM_BLUEPRINT_ID(e):
-    ADMIN: str = "ADMIN"
     AUTH: str = "AUTH"
     MODEL: str = "MODEL"
     USER: str = "USER"
@@ -58,14 +61,9 @@ class ENUM_BLUEPRINT_ID(e):
 
 
 class ENUM_URL_PREFIX(e):
-    ADMIN: str = "/admin"
     AUTH: str = "/auth"
     MODEL: str = "/model"
     USER: str = "/user"
-
-
-class ENUM_ENDPOINT_ADMIN(e):
-    pass
 
 
 class ENUM_ENDPOINT_AUTH(e):
@@ -101,78 +99,10 @@ class ENUM_METHODS(e):
 #                                                          #
 ############################################################
 
-
-class ENUM_TABLE_DB(e):
-    USER: str = "users"
-    CONVERSATION: str = "conversations"
-    CONVERSATION_MESSAGES: str = "conversation_messages"
-    CONVERSATION_IMAGES: str = "conversation_images"
-    ROLE: str = "roles"
-    TOKEN_BLOCK_LIST: str = "token_block_list"
-
-
-class ENUM_COLUMN_TABLE_ROLE(e):
-    NAME: str = "name"
-
-
-class ENUM_COLUMN_TABLE_USER(e):
-    NAME: str = "name"
-    EMAIL: str = "email"
-    PWD_HASH: str = "password_hash"
-    ROLE_ID: str = "role_ids"
-    CREATED_AT: str = "created_at"
-
-
-class ENUM_COLUMN_TABLE_CONVERSATION(e):
-    USER_ID: str = "user_id"
-    NAME: str = "name"
-    START_DATE: str = "start_date"
-    UPDATE_AT: str = "updated_at"
-
-
-class ENUM_COLUMN_TABLE_CONVERSATION_MESSAGE(e):
-    CONVERSATION_ID: str = "conversation_id"
-    MESSAGE_TYPE: str = "message_type"
-    CONTENT: str = "content"
-    CREATED_AT: str = "created_at"
-
-
-class ENUM_COLUMN_TABLE_CONVERSATION_IMAGES(e):
-    CONVERSATION_ID: str = "conversation_id"
-    IMAGE_DATA: str = "image_data"
-    IMAGE_SIZE: str = "image_size"
-    CREATED_AT: str = "created_at"
-
-
-class ENUM_COLUMN_TABLE_TOKEN_BLOCK_LIST(e):
-    ID: str = "id"
-    JTI: str = "jti"
-    TOKEN_TYPE: str = "token_type"
-    USER_ID: str = "user_id"
-    REVOKED_AT: str = "revoked_at"
-    EXPIRES: str = "expires"
-
-
-class ENUM_FOREIGN_KEY(e):
-    ROLE: str = f"{ENUM_TABLE_DB.ROLE.value}.id"
-    USER: str = f"{ENUM_TABLE_DB.USER.value}.id"
-    CONVERSATION: str = f"{ENUM_TABLE_DB.CONVERSATION.value}.id"
-
-
-class ENUM_ON_ACTION(e):
-    CASCADE: str = "CASCADE"
-    SET_NULL: str = "SET NULL"
-
-
-class ENUM_RELATIONSHIP(e):
-    CASCADE: str = "all, delete-orphan"
-
-
-class ENUM_CONTRAINT(e):
-    CONVERSATION_IMAGES: list[str] = ["image_size > 0", "check_image_size_positive"]
-    QUOTA_DAILY: list[str] = ["daily_quota >= 0", "check_daily_quota_positive"]
-    QUOTA_USED: list[str] = ["used_quota >= 0", "check_used_quota_positive"]
-
+class ENUM_COLECTION_NAME(e):
+    USERS: str = 'users'
+    CONVERSATIONS: str = 'conversations'
+    TOKEN: str = 'token_block_list'
 
 ############################################################
 #                                                          #
@@ -218,10 +148,10 @@ class ENUM_DECODED_TOKEN_KEY(e):
 
 
 class ENUM_FILTERS_USER(e):
-    FILTERS: list[str] = ["id", "_pseudo", "_email", "_role_id"]
+    FILTERS: list[str] = ["id", "email", "username"]
 
 class ENUM_FIELDS_USER(e):
-    FIELDS: list[str] = ['email', 'pseudo', 'password']
+    FIELDS: list[str] = ['email', 'username', 'password']
 
 class ENUM_FILTERS_TOKEN(e):
     FILTERS: list[str] = [
@@ -230,8 +160,15 @@ class ENUM_FILTERS_TOKEN(e):
         "token_type",
         "user_id",
         "revoked_at",
-        "exxpires",
+        "expires",
     ]
+    
+class ENUM_CONFIG_DB_KEY(e):
+    DB: str = 'db'
+    HOST: str = 'host'
+    PORT: str = 'port'
+    USERNAME: str = 'username'
+    PASSWORD: str = 'password'
 
 
 ############################################################

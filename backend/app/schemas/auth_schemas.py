@@ -38,7 +38,7 @@ class LoginSchema(Schema):
 
 class ResgistrySchema(Schema):
     email_fields: str = "email"
-    pseudo_fields: str = "pseudo"
+    username_fields: str = "username"
     password: str = "password"
     
     email = fields.Str(
@@ -50,19 +50,19 @@ class ResgistrySchema(Schema):
         }
     )
     
-    pseudo = fields.Str(
+    username = fields.Str(
         required=True,
         validate=[
             fields.Lenght(
                 min=2,
                 max=50,
-                error="Le pseudo doit contenir entre 2 et 50 caractéres"
+                error="Le username doit contenir entre 2 et 50 caractéres"
             )
         ],
         error_messages={
-            "required" : "Le pseudo est un champs requis",
-            "null" : "Le pseudo est un champs qui ne peux pas etre vide",
-            "invalid" : "Veuillez fournir un pseudo valide"
+            "required" : "Le username est un champs requis",
+            "null" : "Le username est un champs qui ne peux pas etre vide",
+            "invalid" : "Veuillez fournir un username valide"
         }
     )
     
@@ -105,10 +105,10 @@ class ResgistrySchema(Schema):
                 "Le mot de passe doit contenir au moins un caractère spécial."
             )
             
-    @validates(pseudo_fields)
-    def validate_pseudo(self, value):
+    @validates(username_fields)
+    def validate_username(self, value):
         if not value.strip():
             raise ValidationError(
-                "Le pseudo ne peux pas etre composé uniquement d'espace"
+                "Le username ne peux pas etre composé uniquement d'espace"
             )
         

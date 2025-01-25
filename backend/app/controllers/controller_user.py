@@ -3,7 +3,6 @@ from flask import (
     request
 )
 from backend.app.schemas.user_schemas import (
-    ConversationOverviewSchema,
     ConversationOverviewRequestSchema,
     ConversationSchema
 )
@@ -27,39 +26,32 @@ from backend.app.exeptions.custom_exeptions import (
     ConversationMessagesNotFound,
     NotAllowedToAccessThisConversationError
 )
-from sqlalchemy.exc import SQLAlchemyError
+from mongoengine.errors import MongoEngineException
 
 bp_user = Blueprint(ENUM_BLUEPRINT_ID.USER.value, __name__)
 
 @bp_user.route(ENUM_ENDPOINT_USER.CONVERSTAION_OVERVIEW.value, methods=[ENUM_METHODS.GET.value])
 @jwt_required()
 def get_conversations():
-    try :
+    try:
         curentUserId = get_jwt_identity()
         params = ConversationOverviewRequestSchema().load(request.args)
         
         page = params['page']
-        per_page = params['per_page']
+        limit = params['per_page']
         
-        data = Service_USER(curentUserId).getUserConversationsOverviewPaginate(page, per_page)
-        
-        data_serialized = ConversationOverviewSchema(many=True).dump(data.items)
+        data = Service_USER(curentUserId).getUserConversationsByPeriod(limit=limit, page=page)
         
         return create_json_response(
             status="success",
-            message=f"Conversations de la page {page} avec {per_page} élements récupérées",
-            data={
-                "conversations": data_serialized,
-                "total": data_serialized.total,
-                "page": data_serialized.page,
-                "pages": data_serialized.pages,
-            }
+            message=f"Conversations récupérées avec succès",
+            data=data
         )
     except ValidationError as e:
         return create_json_response(
             status_code=400,
             status="fail",
-            message="Paramètres de pagination invalides",
+            message="Paramètres de requête invalides",
             details=f"{str(e)}"
         )
     except Exception as e:
@@ -114,7 +106,7 @@ def delete_conversation(idConversation):
             details=str(e)
         )
 
-    except SQLAlchemyError as e:
+    except MongoEngineException as e:
         return create_json_response(
             status_code=500,
             status="fail",

@@ -1,26 +1,11 @@
 from marshmallow import (
     Schema,
     fields,
-    pre_dump,
     validates,
     ValidationError,
     validate
 )
 import pytz
-
-class ConversationOverviewSchema(Schema):
-    id = fields.Int(required=True)
-    name = fields.Str(required=True)        
-    start_date = fields.DateTime(required=True)
-    
-    @pre_dump
-    def convert_start_date_to_paris_tz(self, data, **kwargs):
-        paris_tz = pytz.timezone("Europe/Paris")
-        if data.start_data.tzinfo is None:
-            data.start_date = data.start_date.replace(tzinfo=pytz.utc).astimezone(paris_tz)
-        else :
-            data.start_date = data.start_date.astimezone(paris_tz)
-        return data
 
 class ConversationOverviewRequestSchema(Schema):
     page_fields = "page"

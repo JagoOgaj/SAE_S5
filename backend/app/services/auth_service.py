@@ -10,7 +10,6 @@ from backend.app.exeptions.custom_exeptions import (
     EmailAlreadyUsed
 )
 from typing import Tuple
-from backend.app.core.decorator import Decorators
 from backend.app.services import (
     service_db,
     service_jwt
@@ -22,7 +21,7 @@ class Service_AUTH:
     
     def login(self, data: dict[... : ...]) -> Tuple[str, str]:
         if (email := data.get("email")) and (password := data.get("password")):
-            user = service_db.find_user_by_filters(_email=email)
+            user = service_db.find_user_by_filters(email=email)
 
             if not user:
                 raise UserNotFound(email=email)
@@ -50,3 +49,5 @@ class Service_AUTH:
             service_db.create_user(user, userType)
 
 service_auth: Service_AUTH = Service_AUTH()
+
+

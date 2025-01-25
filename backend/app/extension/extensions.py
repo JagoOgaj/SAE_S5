@@ -1,17 +1,14 @@
 from flask_jwt_extended import JWTManager
 from flask_marshmallow import Marshmallow
-from flask_sqlalchemy import SQLAlchemy
+from flask_mongoengine import MongoEngine
 from passlib.context import CryptContext
-from sqlalchemy.orm import declarative_base
-from backend.app.core import Decorators
 
 type Extension = Extensions
 
 
-@Decorators.singleton
 class Extensions:
     def __init__(self: Extension) -> None:
-        self._db_ext: SQLAlchemy = SQLAlchemy(model_class=declarative_base())
+        self._db_ext: MongoEngine = MongoEngine()
         self._ma_ext: Marshmallow = Marshmallow()
         self._jwt_ext: JWTManager = JWTManager()
         self._pwd_context_ext: CryptContext = CryptContext(
@@ -19,7 +16,7 @@ class Extensions:
         )
 
     @property
-    def db_ext(self: Extension) -> SQLAlchemy:
+    def db_ext(self: Extension) -> MongoEngine:
         return self._db_ext
 
     @property
