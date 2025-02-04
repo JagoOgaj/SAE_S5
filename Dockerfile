@@ -1,11 +1,17 @@
-# Dockerfile
-FROM python:3.9
+FROM python:3.11
 
-# Installation des dépendances
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
-#COPY ./model.h5 /app/model.h5
-COPY api.py /app/api.py
-RUN pip install fastapi uvicorn redis tensorflow opencv-python-headless pillow python-multipart
 
-# Commande pour démarrer l'API
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+COPY . /app
+
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+EXPOSE 5001
+
+CMD ["gunicorn", "-b", "0.0.0.0:5001", "main:app"]

@@ -1,399 +1,114 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Enum,
-    TIMESTAMP,
-    ForeignKey,
-    TEXT,
-    LargeBinary,
-    CheckConstraint,
+from mongoengine import (
+    Document,
+    EmbeddedDocument,
+    StringField,
+    DateTimeField,
+    IntField,
+    EmbeddedDocumentListField,
+    ReferenceField,
+    BinaryField,
 )
-from core import (
-    ENUM_COLUMN_TABLE_USER,
-    ENUM_TABLE_DB,
-    ENUM_MODEL_NAME,
-    ENUM_ROLE,
-    ENUM_COLUMN_TABLE_ROLE,
-    ENUM_COLUMN_TABLE_CONVERSATION,
-    ENUM_COLUMN_TABLE_CONVERSATION_IMAGES,
-    ENUM_COLUMN_TABLE_CONVERSATION_MESSAGE,
-    ENUM_COLUMN_TABLE_QUOTAS,
-    ENUM_ON_ACTION,
-    ENUM_RELATIONSHIP,
-    ENUM_FOREIGN_KEY,
-    ENUM_MESSAGE_TYPE,
-    ENUM_CONTRAINT,
-    ENUM_DEFAULT_QUOTA,
-    get_paris_time,
-)
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.hybrid import hybrid_property
-from extension import ext
-from typing import Self
+
+from backend.app.core import ENUM_COLECTION_NAME
+from backend.app.core import get_paris_time
 
 
-class Model_USER(ext.db_ext.Model):
-    __tablename__ = ENUM_TABLE_DB.USER.value
+class MODEL_USER(Document):
+    """
+    Modèle représentant un utilisateur.
 
-    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    _pseudo = Column(ENUM_COLUMN_TABLE_USER.NAME.value, String, nullable=False)
-    _email = Column(ENUM_COLUMN_TABLE_USER.EMAIL.value, String, nullable=False)
-    _password_hash = Column(
-        ENUM_COLUMN_TABLE_USER.PWD_HASH.value, String, nullable=False
+    Attributes:
+        id (int): Identifiant unique de l'utilisateur.
+        email (str): Adresse email de l'utilisateur.
+        username (str): Nom d'utilisateur.
+        password_hash (str): Hachage du mot de passe de l'utilisateur.
+        created_at (datetime): Date et heure de création de l'utilisateur.
+    """
+
+    id = IntField(primary_key=True)
+    email = StringField(required=True, unique=True, max_length=255)
+    username = StringField(required=True, unique=True, max_length=255)
+    password_hash = StringField(required=True, max_length=255)
+    created_at = DateTimeField(default=get_paris_time())
+
+    meta = {"collection": ENUM_COLECTION_NAME.USERS.value}
+
+
+class MODEL_MESSAGE(EmbeddedDocument):
+    """
+    Modèle représentant un message dans une conversation.
+
+    Attributes:
+        type (str): Type de message (utilisateur ou IA).
+        content (str): Contenu du message.
+        image (binary): Image associée au message.
+        created_at (datetime): Date et heure de création du message.
+    """
+
+    type = StringField(required=True, choices=["user", "ia"])
+    content = StringField()
+    image = BinaryField()
+    created_at = DateTimeField(default=get_paris_time())
+
+
+class MODEL_CONVERSATION(Document):
+    """
+    Modèle représentant une conversation.
+
+    Attributes:
+        id (int): Identifiant unique de la conversation.
+        user_id (ReferenceField): Référence à l'utilisateur propriétaire de la conversation.
+        name (str): Nom de la conversation.
+        created_at (datetime): Date et heure de création de la conversation.
+        updated_at (datetime): Date et heure de la dernière mise à jour de la conversation.
+        messages (list): Liste des messages dans la conversation.
+    """
+
+    id = IntField(
+        primary_key=True,
     )
-    _role_id = Column(
-        ENUM_COLUMN_TABLE_USER.ROLE_ID.value,
-        Integer,
-        ForeignKey(ENUM_FOREIGN_KEY.ROLE.value, ondelete=ENUM_ON_ACTION.SET_NULL.value),
-        nullable=False,
-    )
+    user_id = ReferenceField(MODEL_USER, required=True, reverse_delete_rule=2)
+    name = StringField(required=True, max_length=255)
+    created_at = DateTimeField(default=get_paris_time())
+    updated_at = DateTimeField(default=get_paris_time())
+    messages = EmbeddedDocumentListField(MODEL_MESSAGE)
 
-    role = relationship(
-        ENUM_MODEL_NAME.ROLE.value, back_populates=ENUM_TABLE_DB.USER.value
-    )
-    conversation = relationship(
-        ENUM_MODEL_NAME.CONVERSATION.value,
-        back_populates=ENUM_TABLE_DB.CONVERSATION.value,
-        cascade=ENUM_RELATIONSHIP.CASCADE.value,
-    )
-    quota = relationship(
-        ENUM_MODEL_NAME.QUOTA.value,
-        uselist=False,
-        back_populates=ENUM_TABLE_DB.USER.value,
-    )
-
-    @hybrid_property
-    def pseudo(self: Self) -> str:
-        return self._pseudo
-
-    @pseudo.setter
-    def pseudo(self: Self, value: str) -> None:
-        self._pseudo = value
-
-    @hybrid_property
-    def email(self: Self) -> str:
-        return self._email
-
-    @email.setter
-    def email(self: Self, value: str) -> None:
-        self._email = value
-
-    @hybrid_property
-    def password_hash(self: Self) -> str:
-        return self._password_hash
-
-    @password_hash.setter
-    def password_hash(self: Self, value: str) -> None:
-        self._password_hash = ext.pwd_context_ext.hash(value)
-
-    @hybrid_property
-    def role_name(self: Self):
-        return self.role.role_name if self.role else None
-
-    @role_name.expression
-    def role_name(cls: object) -> bool:
-        return cls.role.has()
-
-    @hybrid_property
-    def is_admin(self: Self) -> bool:
-        return self.role.role_name == ENUM_ROLE.ADMIN.value
-
-    @is_admin.expression
-    def is_admin(cls: object) -> bool:
-        return cls.role.has(role_name=ENUM_ROLE.ADMIN.value)
+    meta = {"collection": ENUM_COLECTION_NAME.CONVERSATIONS.value}
 
 
-class Model_ROLE(ext.db_ext.Model):
-    __tablename__ = ENUM_TABLE_DB.ROLE.value
+class MODEL_TokenBlockList(Document):
+    """
+    Modèle représentant une liste de tokens révoqués.
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    _name = Column(
-        Enum(ENUM_ROLE, name=ENUM_COLUMN_TABLE_ROLE.NAME.value),
-        nullable=False,
-        unique=True,
-    )
+    Attributes:
+        id (int): Identifiant unique du token révoqué.
+        jti (str): Identifiant unique du token.
+        token_type (str): Type de token.
+        user_id (ReferenceField): Référence à l'utilisateur propriétaire du token.
+        revoked_at (datetime): Date et heure de révocation du token.
+        expires (datetime): Date et heure d'expiration du token.
+    """
 
-    @hybrid_property
-    def role_name(self: Self) -> str:
-        return self._name
+    id = IntField(primary_key=True)
+    jti = StringField(required=True, unique=True)
+    token_type = StringField(required=True, max_length=50)
+    user_id = ReferenceField(MODEL_USER, required=True, reverse_delete_rule=2)
+    revoked_at = DateTimeField()
+    expires = DateTimeField(required=True)
 
-    @role_name.setter
-    def role_name(self: Self, value: str) -> None:
-        self._name = value
-
-    users = relationship(
-        ENUM_MODEL_NAME.USER.value, back_populates=ENUM_TABLE_DB.ROLE.value
-    )
-
-
-class Model_CONVERSATION(ext.db_ext.Model):
-    __tablename__ = ENUM_TABLE_DB.CONVERSATION.value
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    _user_id = Column(
-        String,
-        name=ENUM_COLUMN_TABLE_CONVERSATION.USER_ID.value,
-        nullable=False,
-        unique=True,
-    )
-    _name = Column(
-        String,
-        name=ENUM_COLUMN_TABLE_CONVERSATION.NAME.value,
-        nullable=False,
-        unique=False,
-    )
-    _start_date = Column(
-        TIMESTAMP,
-        name=ENUM_COLUMN_TABLE_CONVERSATION.START_DATE.value,
-        default=get_paris_time,
-    )
-
-    user = relationship(
-        ENUM_MODEL_NAME.USER.value, back_populates=ENUM_TABLE_DB.CONVERSATION.value
-    )
-    messages = relationship(
-        ENUM_MODEL_NAME.CONVERSATION_MESSAGE.value,
-        back_populates=ENUM_TABLE_DB.CONVERSATION.value,
-        cascade=ENUM_RELATIONSHIP.CASCADE.value,
-    )
-    images = relationship(
-        ENUM_MODEL_NAME.CONVERSATION_IMAGE.value,
-        back_populates=ENUM_TABLE_DB.CONVERSATION.value,
-        cascade=ENUM_RELATIONSHIP.CASCADE.value,
-    )
-
-    @hybrid_property
-    def user_id(self: Self) -> int:
-        return self._user_id
-
-    @user_id.setter
-    def user_id(self: Self, value: int) -> None:
-        self._user_id = value
-
-    @hybrid_property
-    def name(self: Self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self: Self, value: str) -> None:
-        self._name = value
-
-    @hybrid_property
-    def start_date(self: Self):
-        return self._start_date
-
-    @start_date.setter
-    def start_date(self: Self, value) -> None:
-        self._start_date = value
+    meta = {"collection": ENUM_COLECTION_NAME.TOKEN.value}
 
 
-class Model_CONVERSATION_MESSAGE(ext.db_ext.Model):
-    __tablename__ = ENUM_TABLE_DB.CONVERSATION_MESSAGES.value
+class MODEL_Sequence(Document):
+    """
+    Modèle pour gérer les séquences d'ID auto-incrémentées.
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    _conversation_id = Column(
-        Integer,
-        ForeignKey(
-            ENUM_FOREIGN_KEY.CONVERSATION.value, ondelete=ENUM_ON_ACTION.CASCADE.value
-        ),
-        name=ENUM_COLUMN_TABLE_CONVERSATION_MESSAGE.CONVERSATION_ID.value,
-        nullable=False,
-    )
-    _message_type = Column(
-        Enum(
-            ENUM_MESSAGE_TYPE,
-            name=ENUM_COLUMN_TABLE_CONVERSATION_MESSAGE.MESSAGE_TYPE.value,
-        ),
-        nullable=False,
-    )
-    _content = Column(
-        TEXT, name=ENUM_COLUMN_TABLE_CONVERSATION_MESSAGE.CONTENT.value, nullable=False
-    )
-    _created_at = Column(
-        TIMESTAMP,
-        name=ENUM_COLUMN_TABLE_CONVERSATION_MESSAGE.CREATED_AT.value,
-        default=get_paris_time,
-    )
+    Attributes:
+        id (str): Nom de la séquence.
+        sequence_value (int): Valeur actuelle de la séquence.
+    """
 
-    conversation = relationship(
-        ENUM_MODEL_NAME.CONVERSATION.value,
-        back_populates=ENUM_TABLE_DB.CONVERSATION_MESSAGES.value,
-    )
+    id = StringField(primary_key=True)
+    sequence_value = IntField(default=0)
 
-    @hybrid_property
-    def conversation_id(self: Self) -> int:
-        return self._conversation_id
-
-    @conversation_id.setter
-    def conversation_id(self: Self, value: int) -> None:
-        self._conversation_id = value
-
-    @hybrid_property
-    def message_type(self: Self) -> str:
-        return self._message_type
-
-    @message_type.setter
-    def message_type(self: Self, value: str) -> None:
-        self._message_type = value
-
-    @hybrid_property
-    def content(self: Self) -> str:
-        return self._content
-
-    @content.setter
-    def content(self: Self, value: str) -> None:
-        self._content = value
-
-    @hybrid_property
-    def created_at(self: Self):
-        return self._created_at
-
-    @created_at.setter
-    def created_at(self: Self, value) -> None:
-        self._created_at = value
-
-
-class Model_CONVERSATION_IMAGES(ext.db_ext.Model):
-    __tablename__ = ENUM_TABLE_DB.CONVERSATION_IMAGES.value
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    _conversation_id = Column(
-        Integer,
-        ForeignKey(
-            ENUM_FOREIGN_KEY.CONVERSATION.value, ondelete=ENUM_ON_ACTION.CASCADE.value
-        ),
-        name=ENUM_COLUMN_TABLE_CONVERSATION_MESSAGE.CONVERSATION_ID.value,
-        nullable=False,
-    )
-    _image_data = Column(
-        LargeBinary,
-        name=ENUM_COLUMN_TABLE_CONVERSATION_IMAGES.IMAGE_DATA.value,
-        nullable=False,
-    )
-    _image_size = Column(
-        Integer,
-        name=ENUM_COLUMN_TABLE_CONVERSATION_IMAGES.IMAGE_SIZE.value,
-        nullable=False,
-    )
-    _created_at = Column(
-        TIMESTAMP,
-        name=ENUM_COLUMN_TABLE_CONVERSATION_IMAGES.CREATED_AT.value,
-        default=get_paris_time,
-    )
-
-    conversation = relationship(
-        ENUM_MODEL_NAME.CONVERSATION.value,
-        back_populates=ENUM_TABLE_DB.CONVERSATION_IMAGES.value,
-    )
-
-    __table_args__ = (
-        CheckConstraint(
-            ENUM_CONTRAINT.CONVERSATION_IMAGES.value[0],
-            name=ENUM_CONTRAINT.CONVERSATION_IMAGES.value[1],
-        ),
-    )
-
-    @hybrid_property
-    def conversation_id(self: Self) -> int:
-        return self._conversation_id
-
-    @conversation_id.setter
-    def conversation_id(self: Self, value: int) -> None:
-        self._conversation_id = value
-
-    @hybrid_property
-    def image_data(self: Self):
-        return self._image_data
-
-    @image_data.setter
-    def image_data(self: Self, value: bytes) -> None:
-        self._image_data = value
-
-    @hybrid_property
-    def image_size(self: Self) -> int:
-        return self._image_size
-
-    @image_size.setter
-    def image_size(self: Self, value: int) -> None:
-        self._image_size = value
-
-    @hybrid_property
-    def created_at(self: Self):
-        return self._created_at
-
-    @created_at.setter
-    def created_at(self: Self, value) -> None:
-        self._created_at = value
-
-
-class Model_QUOTA(ext.db_ext.Model):
-    __tablename__ = ENUM_TABLE_DB.QUOTAS.value
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    _user_id = Column(
-        Integer,
-        ForeignKey(ENUM_FOREIGN_KEY.USER.value, ondelete=ENUM_ON_ACTION.CASCADE.value),
-        nullable=False,
-    )
-    _daily_quota = Column(
-        Integer,
-        name=ENUM_COLUMN_TABLE_QUOTAS.DAYLI_QUOTA.value,
-        nullable=False,
-        default=ENUM_DEFAULT_QUOTA.DEFAULT_DAILY_QUOTA.value,
-    )
-    _used_quota = Column(
-        Integer,
-        name=ENUM_COLUMN_TABLE_QUOTAS.USED_QUOTA.value,
-        nullable=False,
-        default=ENUM_DEFAULT_QUOTA.DEFAULT_USED_QUOTA.value,
-    )
-    _created_at = Column(
-        TIMESTAMP,
-        name=ENUM_COLUMN_TABLE_QUOTAS.CREATED_AT.value,
-        default=get_paris_time,
-    )
-    _updated_at = Column(
-        TIMESTAMP,
-        name=ENUM_COLUMN_TABLE_QUOTAS.CREATED_AT.value,
-        default=get_paris_time,
-        onupdate=get_paris_time,
-    )
-
-    user = relationship(
-        ENUM_MODEL_NAME.USER.value, back_populates=ENUM_TABLE_DB.QUOTAS.value
-    )
-
-    __table_args__ = (
-        CheckConstraint(
-            ENUM_CONTRAINT.QUOTA_DAILY.value[0],
-            name=ENUM_CONTRAINT.QUOTA_DAILY.value[1],
-        ),
-        CheckConstraint(
-            ENUM_CONTRAINT.QUOTA_USED.value[0], name=ENUM_CONTRAINT.QUOTA_USED.value[1]
-        ),
-    )
-
-    @hybrid_property
-    def user_id(self: Self) -> int:
-        return self._user_id
-
-    @user_id.setter
-    def user_id(self: Self, value: int) -> None:
-        self._user_id = value
-
-    @hybrid_property
-    def daily_quota(self: Self) -> int:
-        return self._daily_quota
-
-    @daily_quota.setter
-    def daily_quota(self: Self, value: int) -> None:
-        self._daily_quota = value
-
-    @hybrid_property
-    def used_quota(self: Self) -> int:
-        return self._used_quota
-
-    @used_quota.setter
-    def used_quota(self: Self, value: int) -> None:
-        self._used_quota = value
+    meta = {"collection": ENUM_COLECTION_NAME.SEQUENCES.value}
