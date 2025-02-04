@@ -19,7 +19,7 @@ class ENUM_DB_ENV(e):
     DB_HOST: str = "MONGO_HOST"
     DB_PORT: str = "MONGO_PORT"
     DB_USERNAME: str = "MONGO_USERNAME"
-    DB_PWD: str = "MONGO_USERNAME"
+    DB_PWD: str = "MONGO_PASSWORD"
 
 
 class ENUM_JWT_ENV(e):
@@ -27,6 +27,18 @@ class ENUM_JWT_ENV(e):
     IDENTITY_CLAIM: str = "JWT_IDENTITY_CLAIM"
     TOKEN_LOCATION: str = "JWT_TOKEN_LOCATION"
     ACCESS_TOKEN_EXPIRES: str = "JWT_ACCESS_TOKEN_EXPIRES"
+
+
+class ENUM_LOGGER_ENV(e):
+    LOG_FILE_PATH: str = "LOG_FILE_PATH"
+    LOG_FILE_MAX_BYTES: str = "LOG_FILE_MAX_BYTES"
+    LOG_FILE_BACKUP_COUNT: str = "LOG_FILE_BACKUP_COUNT"
+
+
+class ENUM_REDIS_ENV(e):
+    REDIS_HOST: str = "REDIS_HOST"
+    REDIS_PORT: str = "REDIS_PORT"
+    REDIS_DB: str = "REDIS_DB"
 
 
 ############################################################
@@ -68,7 +80,7 @@ class ENUM_URL_PREFIX(e):
 
 class ENUM_ENDPOINT_AUTH(e):
     LOGIN: str = "/login"
-    REGISTRY: str = "/registry/<string:type>"
+    REGISTRY: str = "/registry"
     LOGOUT: str = "/logout"
     REFRESH_TOKEN: str = "/refresh"
     REVOKE_ACCESS_TOKEN: str = "/revoke_access"
@@ -77,6 +89,7 @@ class ENUM_ENDPOINT_AUTH(e):
 
 class ENUM_ENDPOINT_MODEL(e):
     PREDICT: str = "/predict/<string:typeModel>"
+
 
 class ENUM_ENDPOINT_USER(e):
     CONVERSTAION_OVERVIEW: str = "/conversation/overview"
@@ -99,10 +112,13 @@ class ENUM_METHODS(e):
 #                                                          #
 ############################################################
 
+
 class ENUM_COLECTION_NAME(e):
-    USERS: str = 'users'
-    CONVERSATIONS: str = 'conversations'
-    TOKEN: str = 'token_block_list'
+    USERS: str = "users"
+    CONVERSATIONS: str = "conversations"
+    TOKEN: str = "token_block_list"
+    SEQUENCES: str = "sequences"
+
 
 ############################################################
 #                                                          #
@@ -127,16 +143,6 @@ class ENUM_MODEL_NAME(e):
 ############################################################
 
 
-class ENUM_ROLE(e):
-    ADMIN = "ADMIN"
-    USER = "USER"
-
-
-class ENUM_MESSAGE_TYPE(e):
-    USER: str = "USER"
-    AI: str = "AI"
-
-
 class ENUM_TIMEZONE(e):
     TIMEZONE_PARIS: str = "Europe/Paris"
 
@@ -150,8 +156,10 @@ class ENUM_DECODED_TOKEN_KEY(e):
 class ENUM_FILTERS_USER(e):
     FILTERS: list[str] = ["id", "email", "username"]
 
+
 class ENUM_FIELDS_USER(e):
-    FIELDS: list[str] = ['email', 'username', 'password']
+    FIELDS: list[str] = ["email", "username", "password"]
+
 
 class ENUM_FILTERS_TOKEN(e):
     FILTERS: list[str] = [
@@ -162,13 +170,14 @@ class ENUM_FILTERS_TOKEN(e):
         "revoked_at",
         "expires",
     ]
-    
+
+
 class ENUM_CONFIG_DB_KEY(e):
-    DB: str = 'db'
-    HOST: str = 'host'
-    PORT: str = 'port'
-    USERNAME: str = 'username'
-    PASSWORD: str = 'password'
+    DB: str = "db"
+    HOST: str = "host"
+    PORT: str = "port"
+    USERNAME: str = "username"
+    PASSWORD: str = "password"
 
 
 ############################################################
@@ -186,17 +195,15 @@ class ENUM_LOGIN_SCHEMA(e):
     PASSWORD_ERROR: str = "Format d'email invalide."
 
 
-
 ############################################################
 #                                                          #
 #                     Model Type Enum                      #
 #                                                          #
 ############################################################
 
+
 class ENUM_MODELS_TYPE(e):
     GENDER_SCRATCH: str = "gs"
     AGE_SCRATCH: str = "as"
     GENDER_AND_AGE_SCRATCH: str = "gas"
-    GENDER_AND_AGE_TRANSFER: str = "gat" # sous steorïde
-
-    
+    GENDER_AND_AGE_TRANSFER: str = "gat"  # sous steorïde

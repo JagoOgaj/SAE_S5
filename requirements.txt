@@ -13,4 +13,7 @@ pillow
 opencv-python
 scikit-learn
 mongoengine
-flask-mongoengine
+redis
+gunicorn
+requests 
+user-agents

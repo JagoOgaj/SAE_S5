@@ -1,25 +1,21 @@
 from backend.app.extension import ext
-from flask_jwt_extended import (
-    create_access_token,   
-    create_refresh_token
-)
+from flask_jwt_extended import create_access_token, create_refresh_token
 from backend.app.exeptions.custom_exeptions import (
     UserNotFound,
     UserPasswordNotFound,
     PayloadError,
-    EmailAlreadyUsed
+    EmailAlreadyUsed,
 )
 from typing import Tuple
-from backend.app.services import (
-    service_db,
-    service_jwt
-)
+from backend.app.services.db_service import service_db
+from backend.app.services.jwt_service import service_jwt
+
 
 class Service_AUTH:
     def __init__(self) -> None:
         pass
-    
-    def login(self, data: dict[... : ...]) -> Tuple[str, str]:
+
+    def login(self, data: dict[...:...]) -> Tuple[str, str]:
         if (email := data.get("email")) and (password := data.get("password")):
             user = service_db.find_user_by_filters(email=email)
 
@@ -31,23 +27,30 @@ class Service_AUTH:
 
             access_token = create_access_token(identity=user.id)
             refresh_token = create_refresh_token(identity=user.id)
-            
+
             service_jwt.add_token_to_database(access_token)
             service_jwt.add_token_to_database(refresh_token)
-            
+
             return access_token, refresh_token
-            
+
         raise PayloadError("email", "password")
-    
-    def registry(self, data: dict[... : ...], userType) -> None:
-        if(email:=data.get("email")):
-            user = service_db.find_user_by_filters(_email=email)
-            
+
+    def registry(self, data: dict[...:...]) -> None:
+        if email := data.get("email"):
+            user = service_db.find_user_by_filters(email=email)
+
             if user:
                 raise EmailAlreadyUsed(email)
-            
-            service_db.create_user(user, userType)
+
+            user = service_db.create_user(data)
+
+            access_token = create_access_token(identity=user.id)
+            refresh_token = create_refresh_token(identity=user.id)
+
+            service_jwt.add_token_to_database(access_token)
+            service_jwt.add_token_to_database(refresh_token)
+
+            return access_token, refresh_token
+
 
 service_auth: Service_AUTH = Service_AUTH()
-
-

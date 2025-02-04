@@ -1,8 +1,7 @@
-from backend.app.models.models import MODEL_TokenBlockList
+from flask import current_app as app
 from flask_jwt_extended import decode_token
+from backend.app.models.models import MODEL_TokenBlockList
 from backend.app.core.const.enum import ENUM_DECODED_TOKEN_KEY, ENUM_JWT_ENV
-from flask import app as SAE_S5_BACKEND
-from datetime import datetime
 from backend.app.services.db_service import service_db
 from backend.app.core.utility.utils import get_paris_time, convert_to_datetime
 from mongoengine.errors import DoesNotExist
@@ -17,12 +16,11 @@ class Service_JWT:
         decoded_token = decode_token(encoded_token)
 
         db_token = MODEL_TokenBlockList(
+            id=service_db.get_next_sequence_value("token_id"),
             jti=decoded_token[ENUM_DECODED_TOKEN_KEY.JTI.value],
             token_type=decoded_token[ENUM_DECODED_TOKEN_KEY.TYPE.value],
-            user_id=decoded_token[
-                SAE_S5_BACKEND.config.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)
-            ],
-            expires=datetime.fromtimestamp(
+            user_id=decoded_token[app.config.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)],
+            expires=convert_to_datetime(
                 decoded_token[ENUM_DECODED_TOKEN_KEY.EXP.value]
             ),
         )
@@ -36,24 +34,25 @@ class Service_JWT:
             service_db.add_to_db(token)
 
         except DoesNotExist as e:
-            raise DoesNotExist(f"Aucun token trouver avec token_jti = {token_jti}, user_id = {user_id} - \n {e}")
-            
+            raise DoesNotExist(
+                f"Aucun token trouver avec token_jti = {token_jti}, user_id = {user_id} - \n {e}"
+            )
 
         except Exception as e:
             raise Exception(f"Une erreur est survenu - \n {e}")
 
     def is_token_revoked(jwt_payload) -> bool:
         jti = jwt_payload[ENUM_DECODED_TOKEN_KEY.JTI.value]
-        user_id = jwt_payload[
-            SAE_S5_BACKEND.config.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)
-        ]
+        user_id = jwt_payload[app.config.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)]
 
         try:
             token = service_db.find_token_by_filters(jti=jti, user_id=user_id)
             return token.revoked_at is not None
 
         except DoesNotExist as e:
-            DoesNotExist(f"Aucun token trouver avec jti = {jti}, user_id = {user_id} - \n {e}")
+            DoesNotExist(
+                f"Aucun token trouver avec jti = {jti}, user_id = {user_id} - \n {e}"
+            )
 
         except Exception as e:
             Exception(f"Une erreur est survenu - \n {e}")
@@ -80,9 +79,7 @@ def check_if_token_revoked(jwt_headers, jwt_payload):
         if service_jwt.is_token_expired(jwt_payload[ENUM_DECODED_TOKEN_KEY.EXP.value]):
             service_jwt.revoke_token(
                 jwt_payload[ENUM_DECODED_TOKEN_KEY.JTI.value],
-                jwt_payload[
-                    SAE_S5_BACKEND.config.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)
-                ],
+                jwt_payload[app.config.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)],
             )
             return True
 
@@ -90,8 +87,9 @@ def check_if_token_revoked(jwt_headers, jwt_payload):
     except Exception:
         return True
 
+
 @ext.jwt_ext.user_lookup_loader
 def user_loader_callback(jwt_header, jwt_payload):
-    return service_db.find_user_by_filters(id=jwt_payload[
-                    SAE_S5_BACKEND.config.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)
-                ])
+    return service_db.find_user_by_filters(
+        id=jwt_payload[app.config.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)]
+    )
