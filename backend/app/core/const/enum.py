@@ -85,6 +85,8 @@ class ENUM_ENDPOINT_AUTH(e):
     REFRESH_TOKEN: str = "/refresh"
     REVOKE_ACCESS_TOKEN: str = "/revoke_access"
     REVOKE_REFRESH_TOKEN: str = "/revoke_refresh"
+    RESET_PASSWORD: str = "reset_password/"
+    REQUEST_RESET_PASSWORD: str = "/request_reset_password"
 
 
 class ENUM_ENDPOINT_MODEL(e):
@@ -93,7 +95,7 @@ class ENUM_ENDPOINT_MODEL(e):
 
 class ENUM_ENDPOINT_USER(e):
     CONVERSTAION_OVERVIEW: str = "/conversation/overview"
-    CONVERSATION_TO_DELETE: str = "/conversations/<int:conversation_id>"
+    CONVERSATION_TO_DELETE: str = "/conversations_to_del/<int:conversation_id>"
     NEW_CONVERSATION: str = "/new-conversation/"
     CONTINUE_CONVERSATION: str = "/update-conversation/<int:conversation_id>"
     GET_CONVERSATION: str = "/conversation/<int:conversation_id>"
@@ -154,7 +156,7 @@ class ENUM_DECODED_TOKEN_KEY(e):
 
 
 class ENUM_FILTERS_USER(e):
-    FILTERS: list[str] = ["id", "email", "username"]
+    FILTERS: list[str] = ["user_id", "email", "username"]
 
 
 class ENUM_FIELDS_USER(e):
@@ -163,11 +165,11 @@ class ENUM_FIELDS_USER(e):
 
 class ENUM_FILTERS_TOKEN(e):
     FILTERS: list[str] = [
-        "id",
+        "token_id",
         "jti",
         "token_type",
         "user_id",
-        "revoked_at",
+        "is_revoked",
         "expires",
     ]
 
@@ -189,10 +191,10 @@ class ENUM_CONFIG_DB_KEY(e):
 
 class ENUM_LOGIN_SCHEMA(e):
     EMAIL_PATERN: str = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
-    EMAIL_EMPTY_ERROR_MESSAGE: str = "L'email est requis et ne peut pas être vide."
-    EMAIL_REGEX_ERROR_MESSAGE: str = "Format d'email invalide."
+    EMAIL_EMPTY_ERROR_MESSAGE: str = "L'email est requis et ne peut pas être vide"
+    EMAIL_REGEX_ERROR_MESSAGE: str = "Format d'email invalide"
 
-    PASSWORD_ERROR: str = "Format d'email invalide."
+    PASSWORD_ERROR: str = "Format d'email invalide"
 
 
 ############################################################

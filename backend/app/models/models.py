@@ -5,13 +5,11 @@ from mongoengine import (
     DateTimeField,
     IntField,
     EmbeddedDocumentListField,
-    ReferenceField,
     BinaryField,
+    BooleanField
 )
-
 from backend.app.core import ENUM_COLECTION_NAME
 from backend.app.core import get_paris_time
-
 
 class MODEL_USER(Document):
     """
@@ -24,8 +22,8 @@ class MODEL_USER(Document):
         password_hash (str): Hachage du mot de passe de l'utilisateur.
         created_at (datetime): Date et heure de création de l'utilisateur.
     """
-
-    id = IntField(primary_key=True)
+    
+    user_id = IntField(required=True, unique=True)
     email = StringField(required=True, unique=True, max_length=255)
     username = StringField(required=True, unique=True, max_length=255)
     password_hash = StringField(required=True, max_length=255)
@@ -47,7 +45,7 @@ class MODEL_MESSAGE(EmbeddedDocument):
 
     type = StringField(required=True, choices=["user", "ia"])
     content = StringField()
-    image = BinaryField()
+    image = StringField()
     created_at = DateTimeField(default=get_paris_time())
 
 
@@ -57,17 +55,15 @@ class MODEL_CONVERSATION(Document):
 
     Attributes:
         id (int): Identifiant unique de la conversation.
-        user_id (ReferenceField): Référence à l'utilisateur propriétaire de la conversation.
+        user_id (int): Identifiant de l'utilisateur propriétaire de la conversation.
         name (str): Nom de la conversation.
         created_at (datetime): Date et heure de création de la conversation.
         updated_at (datetime): Date et heure de la dernière mise à jour de la conversation.
         messages (list): Liste des messages dans la conversation.
     """
-
-    id = IntField(
-        primary_key=True,
-    )
-    user_id = ReferenceField(MODEL_USER, required=True, reverse_delete_rule=2)
+    
+    conversation_id = IntField(required=True, unique=True)
+    user_id = IntField(required=True)
     name = StringField(required=True, max_length=255)
     created_at = DateTimeField(default=get_paris_time())
     updated_at = DateTimeField(default=get_paris_time())
@@ -84,16 +80,16 @@ class MODEL_TokenBlockList(Document):
         id (int): Identifiant unique du token révoqué.
         jti (str): Identifiant unique du token.
         token_type (str): Type de token.
-        user_id (ReferenceField): Référence à l'utilisateur propriétaire du token.
-        revoked_at (datetime): Date et heure de révocation du token.
+        user_id (int): Identifiant de l'utilisateur associé au token.
+        is_revoked (Boolean): indique si le token est revoke
         expires (datetime): Date et heure d'expiration du token.
     """
 
-    id = IntField(primary_key=True)
+    token_id = IntField(required=True, unique=True)
     jti = StringField(required=True, unique=True)
     token_type = StringField(required=True, max_length=50)
-    user_id = ReferenceField(MODEL_USER, required=True, reverse_delete_rule=2)
-    revoked_at = DateTimeField()
+    user_id = IntField(required=True)
+    is_revoked = BooleanField(required=True, default=False)
     expires = DateTimeField(required=True)
 
     meta = {"collection": ENUM_COLECTION_NAME.TOKEN.value}

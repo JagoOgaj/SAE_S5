@@ -24,66 +24,52 @@ class ConversationOverviewRequestSchema(Schema):
 
     @validates(page_fields)
     def validate_page(self, value):
-        if not isinstance(int, value):
-            raise ValidationError(
+        errorMessages: list[str] = []
+        if not isinstance(value, int):
+            errorMessages.append(
                 f"Le type {type(value)} n'est pas adapté pour cette request il faut en entier"
             )
         if value < 0:
-            raise ValidationError("Le nombre de page doit etre supérieur a 0")
+            errorMessages.append(
+                "Le nombre de page doit etre supérieur a 0"
+            )
+        
+        if len(errorMessages) > 0:
+            raise ValidationError(', '.join(errorMessages))
 
     @validates(per_page_fields)
     def validate_per_page(self, value):
-        if not isinstance(int, value):
-            raise ValidationError(
+        errorMessages: list[str] = []
+        if not isinstance(value, int):
+            errorMessages.append(
                 f"Le type {type(value)} n'est pas adapté pour cette request il faut en entier"
             )
         if 0 < value > 100:
-            raise ValidationError(
+            errorMessages.append(
                 "Le nombre d'item par page doit etre supérieur a 0 et inférieur a 100"
             )
+        
+        if len(errorMessages) > 0:
+            raise ValidationError(', '.join(errorMessages))
 
-
-class ConversationImageSchema(Schema):
+class MessagesSchema(Schema):
     """
-    Schéma de validation pour les images dans une conversation.
+    Schéma de validation pour un message dans une conversation.
 
     Attributes:
-        image_data (fields.String): Champ pour l'image encodée en base64.
-        image_size (fields.Integer): Champ pour la taille de l'image en octets.
-        created_at (fields.DateTime): Champ pour la date de création de l'image.
-    """
-
-    image_data = fields.String(
-        required=True, validate=validate.Length(min=1), description="Image en base64."
-    )
-    image_size = fields.Integer(
-        required=True, description="Taille de l'image en octets."
-    )
-    created_at = fields.DateTime(
-        required=True, description="Date de création de l'image, sinon actuelle."
-    )
-
-
-class ConversationMessageSchema(Schema):
-    """
-    Schéma de validation pour les messages dans une conversation.
-
-    Attributes:
-        message_type (fields.String): Champ pour le type de message (utilisateur ou IA).
+        type (fields.String): Champ pour le type de message (utilisateur ou IA).
         content (fields.String): Champ pour le contenu du message.
+        image (fields.String): Champ pour l'image encodée en base64.
         created_at (fields.DateTime): Champ pour la date de création du message.
     """
-
-    message_type = fields.String(
+    type = fields.String(
         required=True,
-        validate=validate.OneOf(["user_message", "ia_response"]),
-        description="Type de message.",
+        validate=validate.OneOf(["user", "ia"]),
+        description="Type de message"
     )
-    content = fields.String(required=True, description="Contenu du message.")
-    created_at = fields.DateTime(
-        required=False, description="Date de création du message, sinon actuelle."
-    )
-
+    content = fields.String(allow_none=True, description="Contenu du message")
+    image = fields.String(allow_none=True, description="Image encodée en base64")
+    created_at = fields.DateTime(required=True, description="Date de création du message")
 
 class ConversationSchema(Schema):
     """
@@ -91,18 +77,11 @@ class ConversationSchema(Schema):
 
     Attributes:
         name (fields.String): Champ pour le nom de la conversation.
-        images (fields.List): Champ pour la liste des images liées à la conversation.
+        created_at (fields.DateTime): Champ pour la date de création de la conversation.
+        updated_at (fields.DateTime): Champ pour la date de la dernière mise à jour de la conversation.
         messages (fields.List): Champ pour la liste des messages de la conversation.
     """
-
-    name = fields.String(required=True, description="Nom de la conversation.")
-    images = fields.List(
-        fields.Nested(ConversationImageSchema),
-        required=False,
-        description="Liste des images liées à la conversation.",
-    )
-    messages = fields.List(
-        fields.Nested(ConversationMessageSchema),
-        required=False,
-        description="Liste des messages de la conversation.",
-    )
+    name = fields.String(required=True, description="Nom de la conversation")
+    created_at = fields.DateTime(required=True, description="Date de création de la conversation")
+    updated_at = fields.DateTime(required=True, description="Date de la dernière mise à jour de la conversation")
+    messages = fields.List(fields.Nested(MessagesSchema), required=True, description="Liste des messages de la conversation")

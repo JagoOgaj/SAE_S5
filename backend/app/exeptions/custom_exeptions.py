@@ -11,7 +11,7 @@ class UserNotFound(Exception):
             f"{key} = {value}" for key, value in kwargs.items()
         )
         super().__init__(
-            f"Aucun utilisateur trouvé avec ces filtres : \n {self.filter_description}"
+            f"Aucun utilisateur trouvé avec ces filtres : {self.filter_description}"
         )
 
 
@@ -105,7 +105,7 @@ class FilterMissingError(Exception):
             else message
         )
         self.details = "" if details is None else details
-        super().__init__(f"{self.message} - \n {self.details}")
+        super().__init__(f"{self.message} - {self.details}")
 
 
 class FilterUserMissingError(FilterMissingError):

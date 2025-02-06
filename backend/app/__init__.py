@@ -1,7 +1,7 @@
 import os
-import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, send_from_directory
 from dotenv import load_dotenv
+from datetime import timedelta
 from backend.app.core import (
     ENUM_DB_ENV,
     ENUM_FLASK_ENV,
@@ -30,7 +30,6 @@ from werkzeug.exceptions import (
     MethodNotAllowed,
 )
 from backend.app.core import create_json_response, get_client_info
-from user_agents import parse
 
 load_dotenv()
 limiter = Limiter(key_func=get_remote_address)
@@ -54,9 +53,6 @@ class Config:
     JWT_SECRET_KEY: str = os.environ.get(ENUM_JWT_ENV.SECRET_KEY.value)
     JWT_IDENTITY_CLAIM: str = os.environ.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)
     JWT_TOKEN_LOCATION: list[str] = [os.environ.get(ENUM_JWT_ENV.TOKEN_LOCATION.value)]
-    JWT_ACCESS_TOKEN_EXPIRES: int = int(
-        os.environ.get(ENUM_JWT_ENV.ACCESS_TOKEN_EXPIRES.value)
-    )
 
 
 class App:
@@ -202,7 +198,7 @@ class App:
                 message="Une erreur inattendue est survenue.",
                 status_code=500,
             )
-
+                    
         return app
 
 
