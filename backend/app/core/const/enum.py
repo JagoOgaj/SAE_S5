@@ -85,8 +85,9 @@ class ENUM_ENDPOINT_AUTH(e):
     REFRESH_TOKEN: str = "/refresh"
     REVOKE_ACCESS_TOKEN: str = "/revoke_access"
     REVOKE_REFRESH_TOKEN: str = "/revoke_refresh"
-    RESET_PASSWORD: str = "reset_password/"
+    RESET_PASSWORD: str = "/reset_password"
     REQUEST_RESET_PASSWORD: str = "/request_reset_password"
+    CHECK_RESET_PASSWORD_TOKEN: str = "/check_reset_password_token"
 
 
 class ENUM_ENDPOINT_MODEL(e):
@@ -180,6 +181,10 @@ class ENUM_CONFIG_DB_KEY(e):
     PORT: str = "port"
     USERNAME: str = "username"
     PASSWORD: str = "password"
+    
+
+class ENUM_RESET_URL(e):
+    LOCAL: str = 'http://localhost:4200/passwordforgot?token='
 
 
 ############################################################

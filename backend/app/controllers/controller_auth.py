@@ -258,6 +258,29 @@ def reset_password():
             details=str(e),
         )
 
+@bp_auth.route(ENUM_ENDPOINT_AUTH.CHECK_RESET_PASSWORD_TOKEN.value, methods=[ENUM_METHODS.GET.value])
+@jwt_required()
+def validate_reset_token():
+    try:
+        if service_auth.is_reset_password_token(get_jwt()):
+            return create_json_response(
+                status_code=200,
+                status="success",
+                message="Ceci est un token de reset password"
+            )
+        return create_json_response(
+            status_code=403,
+            status='fail',
+            message="Token invalide pour réinitialisation du mot de passe."
+        )
+    except Exception as e:
+        return create_json_response(
+            status_code=500,
+            status="fail",
+            message="Une erreur est survenue",
+            details=str(e),
+        )
+
 @bp_auth.route(
     ENUM_ENDPOINT_AUTH.REFRESH_TOKEN.value, methods=[ENUM_METHODS.POST.value]
 )

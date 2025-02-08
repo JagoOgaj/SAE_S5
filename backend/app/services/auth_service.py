@@ -1,9 +1,8 @@
 from backend.app.extension import ext
-from flask import render_template, url_for
+from flask import render_template
 from flask_jwt_extended import (
     create_access_token, 
-    create_refresh_token,
-    decode_token
+    create_refresh_token
 )
 from backend.app.exeptions.custom_exeptions import (
     UserNotFound,
@@ -11,6 +10,7 @@ from backend.app.exeptions.custom_exeptions import (
     PayloadError,
     EmailAlreadyUsed,
 )
+from backend.app.core.const import ENUM_RESET_URL
 from typing import Tuple
 from backend.app.services.db_service import service_db
 from backend.app.services.jwt_service import service_jwt
@@ -86,8 +86,12 @@ class Service_AUTH:
         if not user:
             raise UserNotFound(email=email)
         service_jwt.revoke_all_tokens(user.user_id)
-        reset_token = create_access_token(identity=user.user_id, expires_delta=timedelta(minutes=15))
-        reset_url = url_for("AUTH.reset_password", token=reset_token, _external=True)
+        reset_token = create_access_token(
+            identity=user.user_id, 
+            expires_delta=timedelta(minutes=15),
+            additional_claims={'type' : 'reset_password'}
+            )
+        reset_url = f'{ENUM_RESET_URL.LOCAL.value}{reset_token}'
         html_content = render_template(
             "reset_password_email.html", 
             reset_url=reset_url,
@@ -97,5 +101,8 @@ class Service_AUTH:
             to=email,
             html_content=html_content
         )
+        
+    def is_reset_password_token(self, token) -> bool:
+        return token.get("type") == "reset_password"
 
 service_auth: Service_AUTH = Service_AUTH()
