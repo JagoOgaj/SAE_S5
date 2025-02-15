@@ -7,9 +7,7 @@ from backend.app.exeptions.custom_exeptions import (
     ConversationNotFoundError,
     NotAllowedToAccessThisConversationError,
 )
-from backend.app.schemas.user_schemas import (
-    MessagesSchema
-)
+from backend.app.schemas.user_schemas import MessagesSchema
 from marshmallow import ValidationError
 from pytz import UTC, timezone
 from backend.app.core.const import ENUM_TIMEZONE
@@ -19,23 +17,23 @@ class Service_USER:
     def __init__(self, userId) -> None:
         self._curentUserId = userId
 
-    def getUserConversationsByPeriod(self: Self, limit: int, page: int = 1) -> dict:
-        skip_count = (page - 1) * limit
-        conversations = (
-            MODEL_CONVERSATION.objects(user_id=self._curentUserId)
-            .order_by("-created_at")
-            .skip(skip_count)
-            .limit(limit)
+    def getUserConversationsByPeriod(self: Self) -> dict:
+        conversations = MODEL_CONVERSATION.objects(user_id=self._curentUserId).order_by(
+            "-updated_at"
         )
-        result = defaultdict(list)
+
+        result = []
         now = get_paris_time()
         paris_tz = timezone(ENUM_TIMEZONE.TIMEZONE_PARIS.value)
 
+        period_order = {}
+        order_index = 0
+
         for conversation in conversations:
-            created_at_utc = conversation.created_at.replace(tzinfo=UTC) 
-            created_at_paris = created_at_utc.astimezone(paris_tz)
+            updated_at_utc = conversation.updated_at.replace(tzinfo=UTC)
+            created_at_paris = updated_at_utc.astimezone(paris_tz)
             delta = now - created_at_paris
-            
+
             if delta.days == 0:
                 period = "Aujourd'hui"
             elif delta.days == 1:
@@ -54,9 +52,16 @@ class Service_USER:
                 years = delta.days // 365
                 period = f"Il y a {years} an{'s' if years > 1 else ''}"
 
-            result[period].append({"id": conversation.conversation_id, "name": conversation.name})
+            if period not in period_order:
+                period_order[period] = order_index
+                result.append({"period": period, "conversations": []})
+                order_index += 1
 
-        return dict(result)
+            result[period_order[period]]["conversations"].append(
+                {"id": conversation.conversation_id, "name": conversation.name}
+            )
+
+        return {i: result[i] for i in range(len(result))}
 
     def deleteConversation(self: Self, idConversation: int) -> None:
         if not isinstance(idConversation, int):
@@ -71,8 +76,8 @@ class Service_USER:
 
         service_db.delete_data(conversation)
 
-    def createConversation(self: Self, data: dict) -> None:
-        
+    def createConversation(self: Self, data: dict) -> int:
+
         conversation = MODEL_CONVERSATION(
             conversation_id=service_db.get_next_sequence_value("conversation_id"),
             user_id=self._curentUserId,
@@ -92,26 +97,33 @@ class Service_USER:
             )
 
         service_db.add_to_db(conversation)
+        return conversation.conversation_id
 
     def updateConversation(self: Self, messages: list, idConversation: int) -> None:
         try:
             if not isinstance(idConversation, int):
                 raise TypeError("L'id de la conversation doit être un entier")
 
-            conversation = MODEL_CONVERSATION.objects(conversation_id=idConversation).first()
+            conversation = MODEL_CONVERSATION.objects(
+                conversation_id=idConversation
+            ).first()
             if not conversation:
-                raise ConversationNotFoundError(f"Conversation avec l'ID {idConversation} non trouvée.")
-        
+                raise ConversationNotFoundError(
+                    f"Conversation avec l'ID {idConversation} non trouvée."
+                )
+
             if conversation.user_id != self._curentUserId:
-                raise NotAllowedToAccessThisConversationError("Vous n'êtes pas autorisé à accéder à cette conversation.")
+                raise NotAllowedToAccessThisConversationError(
+                    "Vous n'êtes pas autorisé à accéder à cette conversation."
+                )
 
             embedded_messages = [MODEL_MESSAGE(**msg).to_mongo() for msg in messages]
-            
+
             MODEL_CONVERSATION.objects(conversation_id=idConversation).update(
-                push__messages={"$each": embedded_messages},  
-                set__updated_at=get_paris_time() 
+                push__messages={"$each": embedded_messages},
+                set__updated_at=get_paris_time(),
             )
-            
+
         except TypeError as e:
             raise TypeError("L'id de la conversation doit être un entier")
 
@@ -138,7 +150,9 @@ class Service_USER:
             if not isinstance(idConversation, int):
                 raise TypeError("L'id de la conversation doit etre un entier")
 
-            conversation = MODEL_CONVERSATION.objects(conversation_id=idConversation).first()
+            conversation = MODEL_CONVERSATION.objects(
+                conversation_id=idConversation
+            ).first()
 
             if not conversation:
                 raise ConversationNotFoundError(idConversation)
@@ -154,6 +168,7 @@ class Service_USER:
                 "id": conversation.conversation_id,
                 "name": conversation.name,
                 "created_at": conversation.created_at,
+                "updated_at": conversation.updated_at,
                 "messages": message_data,
             }
 

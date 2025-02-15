@@ -2,7 +2,8 @@ from flask import Blueprint, request
 from backend.app.schemas.user_schemas import (
     ConversationOverviewRequestSchema,
     ConversationSchema,
-    MessagesSchema
+    MessagesSchema,
+    UpdatedConversation,
 )
 from backend.app.core.const.enum import (
     ENUM_ENDPOINT_USER,
@@ -25,7 +26,7 @@ bp_user = Blueprint(ENUM_BLUEPRINT_ID.USER.value, __name__)
 
 
 @bp_user.route(
-    ENUM_ENDPOINT_USER.CONVERSTAION_OVERVIEW.value, methods=[ENUM_METHODS.GET.value]
+    ENUM_ENDPOINT_USER.CONVERSTAION_OVERVIEW.value, methods=[ENUM_METHODS.POST.value]
 )
 @jwt_required()
 def get_conversations():
@@ -33,12 +34,6 @@ def get_conversations():
     Endpoint pour récupérer les conversations de l'utilisateur.
 
     Récupère les conversations de l'utilisateur actuel avec pagination.
-
-    Exemple de payload d'entrée:
-    {
-        "page": 1,
-        "per_page": 10
-    }
 
     Exemple de payload de sortie:
     {
@@ -68,15 +63,8 @@ def get_conversations():
     """
     try:
         curentUserId = get_jwt_identity()
-        params = ConversationOverviewRequestSchema().load(request.args)
 
-        page = params["page"]
-        limit = params["per_page"]
-
-        data = Service_USER(curentUserId).getUserConversationsByPeriod(
-            limit=limit, page=page
-        )
-
+        data = Service_USER(curentUserId).getUserConversationsByPeriod()
         return create_json_response(
             status="success", message=f"Conversations récupérées avec succès", data=data
         )
@@ -217,12 +205,12 @@ def create_conversation():
         curentUserId = get_jwt_identity()
         data = ConversationSchema().load(request.get_json())
 
-        Service_USER(curentUserId).createConversation(data)
+        newConversation_id = Service_USER(curentUserId).createConversation(data)
         return create_json_response(
             status_code=201,
             status="success",
             message="La conversation a été créée avec succès",
-            details={"user_id": curentUserId, "conversation_data": data},
+            details={"newConversation_id": newConversation_id},
         )
 
     except ValidationError as e:
@@ -284,14 +272,16 @@ def update_conversation(conversation_id):
     """
     try:
         curentUserId = get_jwt_identity()
-        messages_schema = MessagesSchema(many=True)
-        data = request.get_json().get('messages')
+        conversationUpdatedSchema = UpdatedConversation()
+        data = request.get_json()
         if not data:
             raise Exception("Aucune donnée fournis ou ne contiens pas la clé messages")
-        
-        messages = messages_schema.load(data)
 
-        Service_USER(curentUserId).updateConversation(messages, conversation_id)
+        messages = conversationUpdatedSchema.load(data)
+
+        Service_USER(curentUserId).updateConversation(
+            messages.get("messages"), conversation_id
+        )
 
         return create_json_response(
             status_code=200, status="success", message="Conversation mise à jour"
@@ -396,7 +386,7 @@ def get_conversation(conversation_id):
         return create_json_response(
             status_code=404,
             status="fail",
-            message=f"Conversation avec l'ID {idConversation} non trouvée.",
+            message=f"Conversation avec l'ID {conversation_id} non trouvée.",
         )
 
     except NotAllowedToAccessThisConversationError as e:

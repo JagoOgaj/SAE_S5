@@ -21,9 +21,6 @@ services:
       - LOG_FILE_PATH=${LOG_FILE_PATH}
       - LOG_FILE_MAX_BYTES=${LOG_FILE_MAX_BYTES}
       - LOG_FILE_BACKUP_COUNT=${LOG_FILE_BACKUP_COUNT}
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_DB=${REDIS_DB}
     ports:
       - "5001:5001"
     depends_on:
@@ -50,12 +47,6 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-
-  redis:
-    image: redis:latest
-    container_name: redis
-    ports:
-      - "6379:6379"
 
 volumes:
   mongo_data:

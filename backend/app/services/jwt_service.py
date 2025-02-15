@@ -2,12 +2,17 @@ from flask import current_app as app
 from flask_jwt_extended import decode_token
 import pytz
 from backend.app.models.models import MODEL_TokenBlockList
-from backend.app.core.const.enum import ENUM_DECODED_TOKEN_KEY, ENUM_JWT_ENV, ENUM_TIMEZONE
+from backend.app.core.const.enum import (
+    ENUM_DECODED_TOKEN_KEY,
+    ENUM_JWT_ENV,
+    ENUM_TIMEZONE,
+)
 from backend.app.services.db_service import service_db
 from backend.app.core.utility.utils import get_paris_time
 from mongoengine.errors import DoesNotExist
 from backend.app.extension.extensions import ext
 import datetime
+
 
 class Service_JWT:
     def __init__(self) -> None:
@@ -21,7 +26,7 @@ class Service_JWT:
             jti=decoded_token[ENUM_DECODED_TOKEN_KEY.JTI.value],
             token_type=decoded_token[ENUM_DECODED_TOKEN_KEY.TYPE.value],
             user_id=decoded_token[app.config.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)],
-            expires=datetime.datetime.fromtimestamp(decoded_token["exp"])
+            expires=datetime.datetime.fromtimestamp(decoded_token["exp"]),
         )
 
         service_db.add_to_db(db_token)
@@ -39,14 +44,13 @@ class Service_JWT:
 
         except Exception as e:
             raise Exception(f"Une erreur est survenu - \n {e}")
-        
 
     def revoke_all_tokens(self, user_id: int) -> None:
         tokens = service_db.find_token_by_filters(multiple=True, user_id=user_id)
         for token in tokens:
             token.is_revoked = True
             service_db.add_to_db(token)
-    
+
     def is_token_revoked(self, jwt_payload) -> bool:
         jti = jwt_payload[ENUM_DECODED_TOKEN_KEY.JTI.value]
         user_id = jwt_payload[app.config.get(ENUM_JWT_ENV.IDENTITY_CLAIM.value)]
@@ -67,7 +71,9 @@ class Service_JWT:
         if expiration_timestamp is None:
             return False
 
-        expiration_time = datetime.datetime.fromtimestamp(expiration_timestamp, tz=pytz.timezone(ENUM_TIMEZONE.TIMEZONE_PARIS.value))
+        expiration_time = datetime.datetime.fromtimestamp(
+            expiration_timestamp, tz=pytz.timezone(ENUM_TIMEZONE.TIMEZONE_PARIS.value)
+        )
         curent_time = get_paris_time()
 
         return expiration_time < curent_time

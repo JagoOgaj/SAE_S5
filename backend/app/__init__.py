@@ -10,16 +10,11 @@ from backend.app.core import (
     ENUM_URL_PREFIX,
     ENUM_CONFIG_DB_KEY,
 )
-from flask_limiter import Limiter
-from flask_limiter.util import (
-    get_remote_address,
-)
 from flask_cors import CORS
 from backend.app.extension import ext
 from mongoengine import connect
 from backend.app.controllers import bp_user, bp_auth, bp_model
 from backend.app.log import logger
-from backend.app.limiter import limiter
 from werkzeug.exceptions import (
     HTTPException,
     NotFound,
@@ -32,7 +27,6 @@ from werkzeug.exceptions import (
 from backend.app.core import create_json_response, get_client_info
 
 load_dotenv()
-limiter = Limiter(key_func=get_remote_address)
 
 
 class Config:
@@ -77,9 +71,6 @@ class App:
         ext.ma_ext.init_app(app)
         ext.jwt_ext.init_app(app)
 
-        # Initialize Limiter #
-        limiter.init_app(app)
-
         # Routes with blueprint #
         app.register_blueprint(bp_auth, url_prefix=ENUM_URL_PREFIX.AUTH.value)
         app.register_blueprint(bp_user, url_prefix=ENUM_URL_PREFIX.USER.value)
@@ -90,14 +81,14 @@ class App:
         def log_request_info():
             client_ip, region, device = get_client_info()
             logger.info(
-                f"Request: {request.method} {request.url} - Body: {request.get_data()} - IP: {client_ip} - Region: {region} - Device: {device}"
+                f"Request: {request.method} {request.url}  - IP: {client_ip} - Region: {region} - Device: {device}"
             )
 
         @app.after_request
         def log_response_info(response):
             client_ip, region, device = get_client_info()
             logger.info(
-                f"Response: {response.status} - Body: {response.get_data()} - IP: {client_ip} - Region: {region} - Device: {device}"
+                f"Response: {response.status}  - IP: {client_ip} - Region: {region} - Device: {device}"
             )
             return response
 
@@ -198,7 +189,7 @@ class App:
                 message="Une erreur inattendue est survenue.",
                 status_code=500,
             )
-                    
+
         return app
 
 

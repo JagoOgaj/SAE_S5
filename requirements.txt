@@ -17,3 +17,11 @@ redis
 gunicorn
 requests 
 user-agents
+cmake
+dlib
+face_recognition
+matplotlib
+mtcnn
+opencv-python 
+realesrgan 
+basicsr

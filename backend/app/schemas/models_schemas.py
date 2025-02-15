@@ -1,27 +1,32 @@
 from marshmallow import Schema, fields, validates, ValidationError
+from werkzeug.utils import secure_filename
 
 
 class PredictRequestSchema(Schema):
     """
     Schéma de validation pour les requêtes de prédiction de modèle.
 
-    Attributes:
-        image_fields (str): Nom du champ image.
-        image (fields.Str): Champ pour l'image encodée en base64.
+    Accepte un fichier image envoyé via FormData.
     """
 
-    image_fields: str = "image"
-
-    image = fields.Str(
+    image = fields.Field(
         required=True,
         error_messages={
             "required": "L'image est un champ requis",
-            "null": "L'image ne peut pas être vide",
-            "invalid": "Veuillez fournir une image valide en base64",
         },
     )
 
-    @validates(image_fields)
-    def validate_image(self, value: str):
-        if not value.startswith("data:image"):
-            raise ValidationError("L'image doit être au format base64")
+    @validates("image")
+    def validate_image(self, value):
+        """
+        Validation pour s'assurer que le fichier est bien une image.
+        Cette validation peut être améliorée en fonction de vos besoins spécifiques.
+        """
+        if not value or not hasattr(value, "filename"):
+            raise ValidationError("Aucun fichier n'a été fourni")
+
+        filename = secure_filename(value.filename)
+        extension = filename.rsplit(".", 1)[-1].lower()
+
+        if extension not in ["jpg", "png"]:
+            raise ValidationError("Le fichier doit être une image de type JPG, PNG")

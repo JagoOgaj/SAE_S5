@@ -1,16 +1,12 @@
 from flask import Blueprint, request
-from flask_jwt_extended import (
-    jwt_required,
-    get_jwt,
-    get_jwt_identity
-)
+from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from backend.app.core import ENUM_BLUEPRINT_ID
 from backend.app.core.const.enum import ENUM_ENDPOINT_AUTH, ENUM_METHODS
 from backend.app.schemas.auth_schemas import (
-    LoginSchema, 
+    LoginSchema,
     ResgistrySchema,
     ResetPasswordRequestSchema,
-    ResetPasswordSchema
+    ResetPasswordSchema,
 )
 from marshmallow import ValidationError
 from backend.app.services.auth_service import service_auth
@@ -186,7 +182,9 @@ def logout_endpoint():
         )
 
 
-@bp_auth.route(ENUM_ENDPOINT_AUTH.REQUEST_RESET_PASSWORD.value, methods=[ENUM_METHODS.POST.value])
+@bp_auth.route(
+    ENUM_ENDPOINT_AUTH.REQUEST_RESET_PASSWORD.value, methods=[ENUM_METHODS.POST.value]
+)
 def request_reset_password():
     """
     Endpoint pour demander la réinitialisation du mot de passe.
@@ -225,7 +223,9 @@ def request_reset_password():
         )
 
 
-@bp_auth.route(ENUM_ENDPOINT_AUTH.RESET_PASSWORD.value, methods=[ENUM_METHODS.POST.value])
+@bp_auth.route(
+    ENUM_ENDPOINT_AUTH.RESET_PASSWORD.value, methods=[ENUM_METHODS.POST.value]
+)
 @jwt_required()
 def reset_password():
     """
@@ -258,7 +258,11 @@ def reset_password():
             details=str(e),
         )
 
-@bp_auth.route(ENUM_ENDPOINT_AUTH.CHECK_RESET_PASSWORD_TOKEN.value, methods=[ENUM_METHODS.GET.value])
+
+@bp_auth.route(
+    ENUM_ENDPOINT_AUTH.CHECK_RESET_PASSWORD_TOKEN.value,
+    methods=[ENUM_METHODS.GET.value],
+)
 @jwt_required()
 def validate_reset_token():
     try:
@@ -266,12 +270,12 @@ def validate_reset_token():
             return create_json_response(
                 status_code=200,
                 status="success",
-                message="Ceci est un token de reset password"
+                message="Ceci est un token de reset password",
             )
         return create_json_response(
             status_code=403,
-            status='fail',
-            message="Token invalide pour réinitialisation du mot de passe."
+            status="fail",
+            message="Token invalide pour réinitialisation du mot de passe.",
         )
     except Exception as e:
         return create_json_response(
@@ -280,6 +284,7 @@ def validate_reset_token():
             message="Une erreur est survenue",
             details=str(e),
         )
+
 
 @bp_auth.route(
     ENUM_ENDPOINT_AUTH.REFRESH_TOKEN.value, methods=[ENUM_METHODS.POST.value]
@@ -304,7 +309,8 @@ def refresh_endpoint():
     try:
         access_token = service_auth.getNewAccessToken(get_jwt_identity())
         return create_json_response(
-            status_code=201, status="success", 
+            status_code=201,
+            status="success",
             message="Le token a bien été refresh",
             access_token=access_token,
         )

@@ -41,6 +41,14 @@ class ENUM_REDIS_ENV(e):
     REDIS_DB: str = "REDIS_DB"
 
 
+class ENUM_MODELS_ENV(e):
+    PATH_AGE_MODEL: str = "PATH_AGE_MODEL"
+    PATH_GENDER_AGE_MODEL: str = "PATH_GENDER_AGE_MODEL"
+    PATH_GENDER_MODEL: str = "PATH_GENGER_MODEL"
+    PATH_GENDER_AGE_FINETUNING: str = "PATH_GENDER_AGE_FINETUNING"
+    PATH_REAL_ESGRAN: str = "PATH_REAL_ESGRAN"
+
+
 ############################################################
 #                                                          #
 #                      CORS-ENUM                           #
@@ -181,10 +189,10 @@ class ENUM_CONFIG_DB_KEY(e):
     PORT: str = "port"
     USERNAME: str = "username"
     PASSWORD: str = "password"
-    
+
 
 class ENUM_RESET_URL(e):
-    LOCAL: str = 'http://localhost:4200/passwordforgot?token='
+    LOCAL: str = "http://localhost:4200/passwordforgot?token="
 
 
 ############################################################
@@ -213,4 +221,5 @@ class ENUM_MODELS_TYPE(e):
     GENDER_SCRATCH: str = "gs"
     AGE_SCRATCH: str = "as"
     GENDER_AND_AGE_SCRATCH: str = "gas"
-    GENDER_AND_AGE_TRANSFER: str = "gat"  # sous steorïde
+    GENDER_AND_AGE_TRANSFER: str = "gat"
+    WEBCAM_REAL_TIME_VISION: str = "wrtv"

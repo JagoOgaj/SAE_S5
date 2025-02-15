@@ -6,10 +6,11 @@ from mongoengine import (
     IntField,
     EmbeddedDocumentListField,
     BinaryField,
-    BooleanField
+    BooleanField,
 )
 from backend.app.core import ENUM_COLECTION_NAME
 from backend.app.core import get_paris_time
+
 
 class MODEL_USER(Document):
     """
@@ -22,7 +23,7 @@ class MODEL_USER(Document):
         password_hash (str): Hachage du mot de passe de l'utilisateur.
         created_at (datetime): Date et heure de création de l'utilisateur.
     """
-    
+
     user_id = IntField(required=True, unique=True)
     email = StringField(required=True, unique=True, max_length=255)
     username = StringField(required=True, unique=True, max_length=255)
@@ -61,7 +62,7 @@ class MODEL_CONVERSATION(Document):
         updated_at (datetime): Date et heure de la dernière mise à jour de la conversation.
         messages (list): Liste des messages dans la conversation.
     """
-    
+
     conversation_id = IntField(required=True, unique=True)
     user_id = IntField(required=True)
     name = StringField(required=True, max_length=255)
