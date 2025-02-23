@@ -2,6 +2,8 @@ from flask import Blueprint, request
 from backend.app.schemas.user_schemas import (
     ConversationOverviewRequestSchema,
     ConversationSchema,
+    MessagesSchema,
+    UpdatedConversation,
 )
 from backend.app.core.const.enum import (
     ENUM_ENDPOINT_USER,
@@ -24,58 +26,14 @@ bp_user = Blueprint(ENUM_BLUEPRINT_ID.USER.value, __name__)
 
 
 @bp_user.route(
-    ENUM_ENDPOINT_USER.CONVERSTAION_OVERVIEW.value, methods=[ENUM_METHODS.GET.value]
+    ENUM_ENDPOINT_USER.CONVERSTAION_OVERVIEW.value, methods=[ENUM_METHODS.POST.value]
 )
 @jwt_required()
 def get_conversations():
-    """
-    Endpoint pour récupérer les conversations de l'utilisateur.
-
-    Récupère les conversations de l'utilisateur actuel avec pagination.
-
-    Exemple de payload d'entrée:
-    {
-        "page": 1,
-        "per_page": 10
-    }
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Conversations récupérées avec succès",
-        "data": {
-            "Aujourd'hui": [
-                {
-                    "id": 1,
-                    "name": "Conversation 1"
-                },
-                ...
-            ],
-            "Hier": [
-                {
-                    "id": 2,
-                    "name": "Conversation 2"
-                },
-                ...
-            ],
-            ...
-        }
-    }
-
-    Retourne:
-        Réponse JSON avec les données des conversations ou un message d'erreur.
-    """
     try:
         curentUserId = get_jwt_identity()
-        params = ConversationOverviewRequestSchema().load(request.args)
 
-        page = params["page"]
-        limit = params["per_page"]
-
-        data = Service_USER(curentUserId).getUserConversationsByPeriod(
-            limit=limit, page=page
-        )
-
+        data = Service_USER(curentUserId).getUserConversationsByPeriod()
         return create_json_response(
             status="success", message=f"Conversations récupérées avec succès", data=data
         )
@@ -99,28 +57,11 @@ def get_conversations():
     ENUM_ENDPOINT_USER.CONVERSATION_TO_DELETE.value, methods=[ENUM_METHODS.DELETE.value]
 )
 @jwt_required()
-def delete_conversation(idConversation):
-    """
-    Endpoint pour supprimer une conversation.
-
-    Supprime la conversation spécifiée pour l'utilisateur actuel.
-
-    Args:
-        idConversation (int): ID de la conversation à supprimer.
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Conversation et toutes ses données ont été supprimées avec succès"
-    }
-
-    Retourne:
-        Réponse JSON avec un message de succès ou un message d'erreur.
-    """
+def delete_conversation(conversation_id):
     try:
         curentUserId = get_jwt_identity()
 
-        Service_USER(curentUserId).deleteConversation(idConversation)
+        Service_USER(curentUserId).deleteConversation(int(conversation_id))
         return create_json_response(
             status="success",
             message="Conversation et toutes ses données ont été supprimées avec succès",
@@ -176,48 +117,16 @@ def delete_conversation(idConversation):
 )
 @jwt_required()
 def create_conversation():
-    """
-    Endpoint pour créer une nouvelle conversation.
-
-    Crée une nouvelle conversation pour l'utilisateur actuel.
-
-    Exemple de payload d'entrée:
-    {
-        "name": "Nouvelle Conversation",
-        "messages": [
-            {
-                "message_type": "user_message",
-                "content": "Bonjour",
-                "created_at": "2023-01-01T00:00:00Z"
-            }
-        ],
-        "images": [
-            {
-                "image_data": "base64_encoded_image_string",
-                "created_at": "2023-01-01T00:00:00Z"
-            }
-        ]
-    }
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Conversation créée avec succès"
-    }
-
-    Retourne:
-        Réponse JSON avec un message de succès ou un message d'erreur.
-    """
     try:
         curentUserId = get_jwt_identity()
         data = ConversationSchema().load(request.get_json())
 
-        Service_USER(curentUserId).createConversation(data)
+        newConversation_id = Service_USER(curentUserId).createConversation(data)
         return create_json_response(
             status_code=201,
             status="success",
             message="La conversation a été créée avec succès",
-            details={"user_id": curentUserId, "conversation_data": data},
+            details={"newConversation_id": newConversation_id},
         )
 
     except ValidationError as e:
@@ -238,50 +147,22 @@ def create_conversation():
 
 
 @bp_user.route(
-    ENUM_ENDPOINT_USER.CONTINUE_CONVERSATION.value, methods=[ENUM_METHODS.POST.value]
+    ENUM_ENDPOINT_USER.CONTINUE_CONVERSATION.value, methods=[ENUM_METHODS.PUT.value]
 )
 @jwt_required()
-def update_conversation(idConversation):
-    """
-    Endpoint pour mettre à jour une conversation existante.
-
-    Met à jour les détails de la conversation spécifiée pour l'utilisateur actuel.
-
-    Args:
-        idConversation (int): ID de la conversation à mettre à jour.
-
-    Exemple de payload d'entrée:
-    {
-        "name": "Conversation Mise à Jour",
-        "messages": [
-            {
-                "message_type": "user_message",
-                "content": "Message mis à jour",
-                "created_at": "2023-01-01T00:00:00Z"
-            }
-        ],
-        "images": [
-            {
-                "image_data": "base64_encoded_image_string",
-                "created_at": "2023-01-01T00:00:00Z"
-            }
-        ]
-    }
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Conversation mise à jour avec succès"
-    }
-
-    Retourne:
-        Réponse JSON avec un message de succès ou un message d'erreur.
-    """
+def update_conversation(conversation_id):
     try:
         curentUserId = get_jwt_identity()
-        data = ConversationSchema().load(request.get_json())
+        conversationUpdatedSchema = UpdatedConversation()
+        data = request.get_json()
+        if not data:
+            raise Exception("Aucune donnée fournis ou ne contiens pas la clé messages")
 
-        Service_USER(curentUserId).updateConversation(data, idConversation)
+        messages = conversationUpdatedSchema.load(data)
+
+        Service_USER(curentUserId).updateConversation(
+            messages.get("messages"), conversation_id
+        )
 
         return create_json_response(
             status_code=200, status="success", message="Conversation mise à jour"
@@ -304,7 +185,7 @@ def update_conversation(idConversation):
         return create_json_response(
             status_code=404,
             status="fail",
-            message=f"Conversation avec l'ID {idConversation} non trouvée.",
+            message=f"Conversation avec l'ID {conversation_id} non trouvée.",
         )
 
     except NotAllowedToAccessThisConversationError as e:
@@ -327,40 +208,11 @@ def update_conversation(idConversation):
     ENUM_ENDPOINT_USER.GET_CONVERSATION.value, methods=[ENUM_METHODS.GET.value]
 )
 @jwt_required()
-def get_conversation(idConversation):
-    """
-    Endpoint pour récupérer une conversation spécifique.
-
-    Récupère les détails de la conversation spécifiée pour l'utilisateur actuel.
-
-    Args:
-        idConversation (int): ID de la conversation à récupérer.
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Conversation récupérée avec succès",
-        "data": {
-            "id": 1,
-            "name": "Conversation 1",
-            "messages": [
-                {
-                    "id": 1,
-                    "content": "Message 1",
-                    "created_at": "2023-01-01T00:00:00Z"
-                },
-                ...
-            ]
-        }
-    }
-
-    Retourne:
-        Réponse JSON avec les détails de la conversation ou un message d'erreur.
-    """
+def get_conversation(conversation_id):
     try:
         curentUserId = get_jwt_identity()
 
-        data = Service_USER(curentUserId).get_conversation(idConversation)
+        data = Service_USER(curentUserId).get_conversation(int(conversation_id))
 
         return create_json_response(
             status_code=200,
@@ -386,7 +238,7 @@ def get_conversation(idConversation):
         return create_json_response(
             status_code=404,
             status="fail",
-            message=f"Conversation avec l'ID {idConversation} non trouvée.",
+            message=f"Conversation avec l'ID {conversation_id} non trouvée.",
         )
 
     except NotAllowedToAccessThisConversationError as e:

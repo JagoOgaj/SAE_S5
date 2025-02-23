@@ -7,30 +7,33 @@ from backend.app.exeptions.custom_exeptions import (
     ConversationNotFoundError,
     NotAllowedToAccessThisConversationError,
 )
-from backend.app.schemas.user_schemas import (
-    ConversationMessageSchema,
-    ConversationImageSchema,
-)
+from backend.app.schemas.user_schemas import MessagesSchema
 from marshmallow import ValidationError
+from pytz import UTC, timezone
+from backend.app.core.const import ENUM_TIMEZONE
 
 
 class Service_USER:
     def __init__(self, userId) -> None:
         self._curentUserId = userId
 
-    def getUserConversationsByPeriod(self: Self, limit: int, page: int = 1) -> dict:
-        skip_count = (page - 1) * limit
-        conversations = (
-            MODEL_CONVERSATION.objects(user_id=self._curentUserId)
-            .order_by("-created_at")
-            .skip(skip_count)
-            .limit(limit)
+    def getUserConversationsByPeriod(self: Self) -> dict:
+        conversations = MODEL_CONVERSATION.objects(user_id=self._curentUserId).order_by(
+            "-updated_at"
         )
-        result = defaultdict(list)
+
+        result = []
         now = get_paris_time()
+        paris_tz = timezone(ENUM_TIMEZONE.TIMEZONE_PARIS.value)
+
+        period_order = {}
+        order_index = 0
 
         for conversation in conversations:
-            delta = now - conversation.created_at
+            updated_at_utc = conversation.updated_at.replace(tzinfo=UTC)
+            created_at_paris = updated_at_utc.astimezone(paris_tz)
+            delta = now - created_at_paris
+
             if delta.days == 0:
                 period = "Aujourd'hui"
             elif delta.days == 1:
@@ -49,16 +52,23 @@ class Service_USER:
                 years = delta.days // 365
                 period = f"Il y a {years} an{'s' if years > 1 else ''}"
 
-            result[period].append({"id": conversation.id, "name": conversation.name})
+            if period not in period_order:
+                period_order[period] = order_index
+                result.append({"period": period, "conversations": []})
+                order_index += 1
 
-        return result
+            result[period_order[period]]["conversations"].append(
+                {"id": conversation.conversation_id, "name": conversation.name}
+            )
+
+        return {i: result[i] for i in range(len(result))}
 
     def deleteConversation(self: Self, idConversation: int) -> None:
-        if not isinstance(int, idConversation):
+        if not isinstance(idConversation, int):
             raise TypeError("L'ID de la conversation doit être un entier")
 
         conversation = MODEL_CONVERSATION.objects(
-            id=idConversation, user_id=self._curentUserId
+            conversation_id=idConversation, user_id=self._curentUserId
         ).first()
 
         if not conversation:
@@ -66,123 +76,99 @@ class Service_USER:
 
         service_db.delete_data(conversation)
 
-    def createConversation(self: Self, data: dict) -> None:
+    def createConversation(self: Self, data: dict) -> int:
 
         conversation = MODEL_CONVERSATION(
-            id=service_db.get_next_sequence_value("conversation_id"),
+            conversation_id=service_db.get_next_sequence_value("conversation_id"),
             user_id=self._curentUserId,
             name=data["name"],
+            created_at=data["created_at"],
+            updated_at=data["updated_at"],
         )
 
-        for image in data.get("images", []):
-
-            conversation.messages.append(
-                MODEL_MESSAGE(
-                    type="image",
-                    content=image["image_data"],
-                    created_at=image["created_at"],
-                )
-            )
-
         for msg in data.get("messages", []):
-
             conversation.messages.append(
                 MODEL_MESSAGE(
-                    type=msg["message_type"],
-                    content=msg["content"],
+                    type=msg["type"],
+                    content=msg.get("content"),
+                    image=msg.get("image"),
                     created_at=msg["created_at"],
                 )
             )
 
         service_db.add_to_db(conversation)
+        return conversation.conversation_id
 
-    def _add_messages_to_conversation(conversation: dict, messages: list):
-        for message in messages:
-            validated_message = ConversationMessageSchema().load(message)
-
-            message_obj = MODEL_MESSAGE(
-                type=validated_message["message_type"],
-                content=validated_message["content"],
-                created_at=validated_message["created_at"],
-            )
-            conversation.messages.append(message_obj)
-        service_db.add_to_db(conversation)
-
-    def _add_images_to_conversation(
-        self: Self, conversation: MODEL_CONVERSATION, images: list
-    ) -> None:
-        for image in images:
-            validated_image = ConversationImageSchema().load(image)
-
-            image_obj = MODEL_MESSAGE(
-                type="image",
-                content=validated_image["image_data"],
-                created_at=validated_image["created_at"],
-            )
-            conversation.messages.append(image_obj)
-        service_db.add_to_db(conversation)
-
-    def updateConversation(self: Self, data: dict, idConversation: int) -> None:
+    def updateConversation(self: Self, messages: list, idConversation: int) -> None:
         try:
-            if not isinstance(int, idConversation):
-                raise TypeError("L'id de la conversation doit etre un entier")
+            if not isinstance(idConversation, int):
+                raise TypeError("L'id de la conversation doit être un entier")
 
-            conversation = MODEL_CONVERSATION.objects(id=idConversation).first()
-
+            conversation = MODEL_CONVERSATION.objects(
+                conversation_id=idConversation
+            ).first()
             if not conversation:
-                raise ConversationNotFoundError(idConversation)
+                raise ConversationNotFoundError(
+                    f"Conversation avec l'ID {idConversation} non trouvée."
+                )
 
-            if conversation._user_id != self._curentUserId:
-                raise NotAllowedToAccessThisConversationError(idConversation)
+            if conversation.user_id != self._curentUserId:
+                raise NotAllowedToAccessThisConversationError(
+                    "Vous n'êtes pas autorisé à accéder à cette conversation."
+                )
 
-            if "messages" in data:
-                self._add_messages_to_conversation(conversation, data["messages"])
+            embedded_messages = [MODEL_MESSAGE(**msg).to_mongo() for msg in messages]
 
-            if "images" in data:
-                self._add_images_to_conversation(conversation, data["images"])
+            MODEL_CONVERSATION.objects(conversation_id=idConversation).update(
+                push__messages={"$each": embedded_messages},
+                set__updated_at=get_paris_time(),
+            )
 
         except TypeError as e:
-            raise TypeError("L'id de la conversation doit être un entier") from e
+            raise TypeError("L'id de la conversation doit être un entier")
 
         except ConversationNotFoundError as e:
             raise ConversationNotFoundError(
                 f"Conversation avec l'ID {idConversation} non trouvée."
-            ) from e
+            )
 
         except NotAllowedToAccessThisConversationError as e:
             raise NotAllowedToAccessThisConversationError(
                 "Vous n'êtes pas autorisé à accéder à cette conversation."
-            ) from e
+            )
 
         except ValidationError as e:
-            raise ValidationError(str(e)) from e
+            raise ValidationError(str(e))
 
         except Exception as e:
             raise Exception(
                 f"Une erreur inconnue est survenue lors de la mise à jour de la conversation : {str(e)}"
-            ) from e
+            )
 
     def get_conversation(self: Self, idConversation: int) -> dict[str:...]:
         try:
-            if not isinstance(int, idConversation):
+            if not isinstance(idConversation, int):
                 raise TypeError("L'id de la conversation doit etre un entier")
 
-            conversation = MODEL_CONVERSATION.objects(id=idConversation).first()
+            conversation = MODEL_CONVERSATION.objects(
+                conversation_id=idConversation
+            ).first()
 
             if not conversation:
                 raise ConversationNotFoundError(idConversation)
 
-            if conversation._user_id != self._curentUserId:
+            if conversation.user_id != self._curentUserId:
                 raise NotAllowedToAccessThisConversationError(idConversation)
 
             messages = sorted(conversation.messages, key=lambda msg: msg.created_at)
 
-            message_data = ConversationMessageSchema(many=True).dump(messages)
+            message_data = MessagesSchema(many=True).dump(messages)
 
             return {
-                "id": conversation.id,
+                "id": conversation.conversation_id,
                 "name": conversation.name,
-                "start_date": conversation.start_date,
+                "created_at": conversation.created_at,
+                "updated_at": conversation.updated_at,
                 "messages": message_data,
             }
 

@@ -1,13 +1,10 @@
 import pytz
-from datetime import datetime
+from datetime import datetime, timedelta
 from backend.app.core import ENUM_TIMEZONE
 from flask import jsonify, request
 import base64
 import cv2
 import numpy as np
-from io import BytesIO
-from PIL import Image
-import tensorflow as tf
 import requests
 from user_agents import parse
 from backend.app.log import logger
@@ -24,21 +21,6 @@ def get_paris_time():
     return datetime.now(paris_tz)
 
 
-def convert_to_datetime(time_to_convert):
-    """
-    Convertit un timestamp en objet datetime dans le fuseau horaire de Paris.
-
-    Args:
-        time_to_convert (int): Le timestamp à convertir.
-
-    Returns:
-        datetime: L'objet datetime correspondant dans le fuseau horaire de Paris.
-    """
-    return datetime.fromtimestamp(
-        time_to_convert, tz=pytz.timezone(ENUM_TIMEZONE.TIMEZONE_PARIS.value)
-    )
-
-
 def create_json_response(status_code=200, **kwargs):
     """
     Crée une réponse JSON avec un code de statut HTTP.
@@ -53,54 +35,6 @@ def create_json_response(status_code=200, **kwargs):
     response = jsonify(kwargs)
     response.status_code = status_code
     return response
-
-
-def preprocess_images_GAS(
-    image_base64, img_size: tuple[int, int], needGray: bool = True
-) -> list:
-    """
-    Prétraite une image pour l'adapter à un modèle de reconnaissance d'images.
-
-    Args:
-        image_base64 (str): L'image encodée en base64.
-        img_size (tuple[int, int]): La taille à laquelle redimensionner l'image.
-        needGray (bool, optional): Indique si l'image doit être convertie en niveaux de gris. Par défaut à True.
-
-    Returns:
-        list: Une liste contenant l'image prétraitée.
-    """
-    img_data = base64.b64decode(image_base64)
-    img = Image.open(BytesIO(img_data))
-    img = np.array(img)
-    if needGray:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    img = cv2.resize(img, img_size)
-    img = img / 255.0
-    img = np.expand_dims(img, axis=0)
-    if needGray:
-        img = np.expand_dims(img, axis=-1)
-    return img
-
-
-def preprocess_images_GAT(image_base64) -> list:
-    """
-    Prétraite une image pour l'adapter à un modèle de reconnaissance d'images.
-
-    Args:
-        image_base64 (str): L'image encodée en base64.
-        img_size (tuple[int, int]): La taille à laquelle redimensionner l'image.
-        needGray (bool, optional): Indique si l'image doit être convertie en niveaux de gris. Par défaut à True.
-
-    Returns:
-        list: Une liste contenant l'image prétraitée.
-    """
-    image_data = base64.b64decode(image_base64)
-    image = tf.io.decode_jpeg(image_data, channels=3)
-    image = tf.cast(image, tf.float32)
-    image = image / 255.0
-    image = tf.image.resize(image, [224, 224])
-    image = tf.reshape(image, [-1, 224, 224, 3])
-    return image
 
 
 def get_client_info():
@@ -124,3 +58,60 @@ def get_client_info():
 
     device = f"{user_agent.device.family} {user_agent.device.brand} {user_agent.device.model}"
     return client_ip, region, device
+
+
+def send_reset_password_email(to: str, html_content: str) -> None:
+    """
+    Envoie un email de réinitialisation de mot de passe avec un contenu HTML.
+
+    Args:
+        to (str): L'adresse email du destinataire.
+        html_content (str): Le contenu HTML de l'email.
+
+    Raises:
+        smtplib.SMTPAuthenticationError: Si une erreur d'authentification SMTP se produit.
+        smtplib.SMTPServerDisconnected: Si la connexion au serveur SMTP est fermée.
+        Exception: Pour toute autre erreur qui se produit lors de l'envoi de l'email.
+
+    Cette fonction utilise les variables d'environnement suivantes :
+        - EMAIL_SAES: L'adresse email de l'expéditeur.
+        - PWD_EMAIL: Le mot de passe de l'expéditeur.
+        - SMTP_SERVER: L'adresse du serveur SMTP.
+        - SMTP_PORT: Le port du serveur SMTP.
+    """
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    from dotenv import load_dotenv
+    import os
+
+    load_dotenv()
+
+    sender_email = os.environ.get("EMAIL_SAES")
+    sender_password = os.environ.get("PWD_EMAIL")
+    smtp_server = os.environ.get("SMTP_SERVER")
+    smtp_port = int(os.environ.get("SMTP_PORT"))
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = "Réinitialisation de mot de passe"
+    msg["From"] = sender_email
+    msg["To"] = to
+
+    part = MIMEText(html_content, "html")
+    msg.attach(part)
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, to, msg.as_string())
+    except smtplib.SMTPAuthenticationError as e:
+        raise smtplib.SMTPAuthenticationError(f"Erreur d'authentification : {e}")
+    except smtplib.SMTPServerDisconnected as e:
+        raise smtplib.SMTPServerDisconnected(
+            f"Erreur : Connexion au serveur SMTP fermée. {e}"
+        )
+    except Exception as e:
+        raise Exception(f"Erreur {e}")

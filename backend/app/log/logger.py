@@ -8,21 +8,6 @@ load_dotenv()
 
 
 def setup_logger():
-    """
-    Configure et retourne un logger pour l'application.
-
-    Cette fonction configure un logger avec deux handlers :
-    - Un handler pour la console qui affiche les logs au niveau DEBUG.
-    - Un handler pour un fichier de log rotatif qui enregistre les logs au niveau DEBUG.
-
-    Les paramètres pour le fichier de log rotatif sont chargés à partir des variables d'environnement :
-    - `LOG_FILE_PATH` : Chemin du fichier de log.
-    - `LOG_FILE_MAX_BYTES` : Taille maximale du fichier de log avant rotation.
-    - `LOG_FILE_BACKUP_COUNT` : Nombre de fichiers de sauvegarde à conserver.
-
-    Returns:
-        logging.Logger: Le logger configuré pour l'application.
-    """
     logger = logging.getLogger("app_logger")
     logger.setLevel(logging.DEBUG)
 

@@ -41,6 +41,17 @@ class ENUM_REDIS_ENV(e):
     REDIS_DB: str = "REDIS_DB"
 
 
+class ENUM_MODELS_ENV(e):
+    PATH_AGE_MODEL: str = "PATH_AGE_MODEL"
+    PATH_GENDER_AGE_MODEL: str = "PATH_GENDER_AGE_MODEL"
+    PATH_GENDER_MODEL: str = "PATH_GENGER_MODEL"
+    PATH_GENDER_AGE_FINETUNING: str = "PATH_GENDER_AGE_FINETUNING"
+    PATH_AGE_ETHNIE_MODEL: str = "PATH_AGE_ETHNIE_MODEL"
+    PATH_GENDER_ETHNIE_MODEL: str = "PATH_GENDER_ETHNIE_MODEL"
+    PATH_ETHNIE_MODEL: str = "PATH_ETHNIE_MODEL"
+    PATH_YOLO: str = "PATH_YOLO"
+
+
 ############################################################
 #                                                          #
 #                      CORS-ENUM                           #
@@ -85,6 +96,9 @@ class ENUM_ENDPOINT_AUTH(e):
     REFRESH_TOKEN: str = "/refresh"
     REVOKE_ACCESS_TOKEN: str = "/revoke_access"
     REVOKE_REFRESH_TOKEN: str = "/revoke_refresh"
+    RESET_PASSWORD: str = "/reset_password"
+    REQUEST_RESET_PASSWORD: str = "/request_reset_password"
+    CHECK_RESET_PASSWORD_TOKEN: str = "/check_reset_password_token"
 
 
 class ENUM_ENDPOINT_MODEL(e):
@@ -93,7 +107,7 @@ class ENUM_ENDPOINT_MODEL(e):
 
 class ENUM_ENDPOINT_USER(e):
     CONVERSTAION_OVERVIEW: str = "/conversation/overview"
-    CONVERSATION_TO_DELETE: str = "/conversations/<int:conversation_id>"
+    CONVERSATION_TO_DELETE: str = "/conversations_to_del/<int:conversation_id>"
     NEW_CONVERSATION: str = "/new-conversation/"
     CONTINUE_CONVERSATION: str = "/update-conversation/<int:conversation_id>"
     GET_CONVERSATION: str = "/conversation/<int:conversation_id>"
@@ -154,7 +168,7 @@ class ENUM_DECODED_TOKEN_KEY(e):
 
 
 class ENUM_FILTERS_USER(e):
-    FILTERS: list[str] = ["id", "email", "username"]
+    FILTERS: list[str] = ["user_id", "email", "username"]
 
 
 class ENUM_FIELDS_USER(e):
@@ -163,11 +177,11 @@ class ENUM_FIELDS_USER(e):
 
 class ENUM_FILTERS_TOKEN(e):
     FILTERS: list[str] = [
-        "id",
+        "token_id",
         "jti",
         "token_type",
         "user_id",
-        "revoked_at",
+        "is_revoked",
         "expires",
     ]
 
@@ -180,6 +194,21 @@ class ENUM_CONFIG_DB_KEY(e):
     PASSWORD: str = "password"
 
 
+class ENUM_RESET_URL(e):
+    LOCAL: str = "http://localhost:4200/passwordforgot?token="
+
+
+class ENUM_CLASSES(e):
+    ETHNICITY: list[str] = [
+        "européenne",
+        "africaine",
+        "asiatique",
+        "sud-asiatique",
+        "inconue",
+    ]
+    CLASS_NAMES_GENDER: dict[int, str] = {0: "Homme", 1: "Femme"}
+
+
 ############################################################
 #                                                          #
 #                       Schema Enum                        #
@@ -189,10 +218,10 @@ class ENUM_CONFIG_DB_KEY(e):
 
 class ENUM_LOGIN_SCHEMA(e):
     EMAIL_PATERN: str = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
-    EMAIL_EMPTY_ERROR_MESSAGE: str = "L'email est requis et ne peut pas être vide."
-    EMAIL_REGEX_ERROR_MESSAGE: str = "Format d'email invalide."
+    EMAIL_EMPTY_ERROR_MESSAGE: str = "L'email est requis et ne peut pas être vide"
+    EMAIL_REGEX_ERROR_MESSAGE: str = "Format d'email invalide"
 
-    PASSWORD_ERROR: str = "Format d'email invalide."
+    PASSWORD_ERROR: str = "Format d'email invalide"
 
 
 ############################################################
@@ -206,4 +235,6 @@ class ENUM_MODELS_TYPE(e):
     GENDER_SCRATCH: str = "gs"
     AGE_SCRATCH: str = "as"
     GENDER_AND_AGE_SCRATCH: str = "gas"
-    GENDER_AND_AGE_TRANSFER: str = "gat"  # sous steorïde
+    GENDER_AND_AGE_TRANSFER: str = "gat"
+    WEBCAM_REAL_TIME_VISION: str = "wrtv"
+    ETHNIE_AGE_GENDER_TRANSFER: str = "eagt"

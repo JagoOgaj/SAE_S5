@@ -1,4 +1,4 @@
-from backend.app import app
+from backend.app import app, Config
 
 if __name__ == "__main__":
-    app.run(port=5001)
+    app.run(port=Config.FLASK_PORT)

@@ -11,7 +11,7 @@ from backend.app.exeptions.custom_exeptions import (
     FilterTokenMissingError,
     FieldsUserMissingError,
 )
-from backend.app.models.models import MODEL_USER, MODEL_TokenBlockList, MODEL_Sequence
+from backend.app.models.models import MODEL_USER, MODEL_Sequence, MODEL_TokenBlockList
 
 
 class Service_DB:
@@ -47,7 +47,7 @@ class Service_DB:
             raise FieldsUserMissingError(ENUM_FIELDS_USER.FIELDS.value)
 
         new_user = MODEL_USER(
-            id=self.get_next_sequence_value("user_id"),
+            user_id=self.get_next_sequence_value("user_id"),
             email=data[ENUM_FIELDS_USER.FIELDS.value[0]],
             username=data[ENUM_FIELDS_USER.FIELDS.value[1]],
             password_hash=ext.pwd_context_ext.hash(
