@@ -4,16 +4,6 @@ import re
 
 
 class LoginSchema(Schema):
-    """
-    Schéma de validation pour les données de connexion.
-
-    Attributes:
-        email_fields (str): Nom du champ email.
-        password_fields (str): Nom du champ mot de passe.
-        email (fields.Str): Champ pour l'adresse email de l'utilisateur.
-        password (fields.Str): Champ pour le mot de passe de l'utilisateur.
-    """
-
     email_fields: str = "email"
     password_fields: str = "password"
 
@@ -53,17 +43,6 @@ class LoginSchema(Schema):
 
 
 class ResgistrySchema(Schema):
-    """
-    Schéma de validation pour les données d'enregistrement.
-
-    Attributes:
-        email_fields (str): Nom du champ email.
-        username_fields (str): Nom du champ nom d'utilisateur.
-        password_fields (str): Nom du champ mot de passe.
-        email (fields.Str): Champ pour l'adresse email de l'utilisateur.
-        username (fields.Str): Champ pour le nom d'utilisateur.
-        password (fields.Str): Champ pour le mot de passe de l'utilisateur.
-    """
 
     email_fields: str = "email"
     username_fields: str = "username"

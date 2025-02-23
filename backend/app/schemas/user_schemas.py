@@ -2,15 +2,6 @@ from marshmallow import Schema, fields, validates, ValidationError, validate
 
 
 class ConversationOverviewRequestSchema(Schema):
-    """
-    Schéma de validation pour les requêtes de vue d'ensemble des conversations.
-
-    Attributes:
-        page_fields (str): Nom du champ page.
-        per_page_fields (str): Nom du champ per_page.
-        page (fields.Int): Champ pour le numéro de page.
-        per_page (fields.Int): Champ pour le nombre d'éléments par page.
-    """
 
     page_fields = "page"
     per_page_fields = "per_page"
@@ -52,16 +43,6 @@ class ConversationOverviewRequestSchema(Schema):
 
 
 class MessagesSchema(Schema):
-    """
-    Schéma de validation pour un message dans une conversation.
-
-    Attributes:
-        type (fields.String): Champ pour le type de message (utilisateur ou IA).
-        content (fields.String): Champ pour le contenu du message.
-        image (fields.String): Champ pour l'image encodée en base64.
-        created_at (fields.DateTime): Champ pour la date de création du message.
-    """
-
     type = fields.String(
         required=True,
         validate=validate.OneOf(["user", "ia"]),
@@ -75,16 +56,6 @@ class MessagesSchema(Schema):
 
 
 class ConversationSchema(Schema):
-    """
-    Schéma de validation pour une conversation.
-
-    Attributes:
-        name (fields.String): Champ pour le nom de la conversation.
-        created_at (fields.DateTime): Champ pour la date de création de la conversation.
-        updated_at (fields.DateTime): Champ pour la date de la dernière mise à jour de la conversation.
-        messages (fields.List): Champ pour la liste des messages de la conversation.
-    """
-
     name = fields.String(required=True, description="Nom de la conversation")
     created_at = fields.DateTime(
         required=True, description="Date de création de la conversation"

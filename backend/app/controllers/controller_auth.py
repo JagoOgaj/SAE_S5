@@ -24,28 +24,6 @@ bp_auth = Blueprint(ENUM_BLUEPRINT_ID.AUTH.value, __name__)
 
 @bp_auth.route(ENUM_ENDPOINT_AUTH.LOGIN.value, methods=[ENUM_METHODS.POST.value])
 def login_endpoint():
-    """
-    Endpoint pour la connexion de l'utilisateur.
-
-    Valide les données de connexion et retourne des tokens d'accès et de rafraîchissement si la connexion est réussie.
-
-    Exemple de payload d'entrée:
-    {
-        "email": "user@example.com",
-        "password": "password123"
-    }
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Connexion acceptée",
-        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-        "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
-    }
-
-    Retourne:
-        Réponse JSON avec les tokens d'accès et de rafraîchissement ou un message d'erreur.
-    """
     try:
         data = LoginSchema().load(request.get_json())
         access_token, refresh_token = service_auth.login(data)
@@ -94,29 +72,6 @@ def login_endpoint():
 
 @bp_auth.route(ENUM_ENDPOINT_AUTH.REGISTRY.value, methods=[ENUM_METHODS.POST.value])
 def registry_endpoint():
-    """
-    Endpoint pour l'enregistrement de l'utilisateur.
-
-    Valide les données d'enregistrement et crée un nouvel utilisateur.
-
-    Exemple de payload d'entrée:
-    {
-        "email": "user@example.com",
-        "username": "username",
-        "password": "password123"
-    }
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Enregistrement réalisé",
-        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-        "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
-    }
-
-    Retourne:
-        Réponse JSON avec un message de succès ou un message d'erreur.
-    """
     try:
         data = ResgistrySchema().load(request.get_json())
         access_token, refresh_token = service_auth.registry(data)
@@ -153,20 +108,6 @@ def registry_endpoint():
 @bp_auth.route(ENUM_ENDPOINT_AUTH.LOGOUT.value, methods=[ENUM_METHODS.POST.value])
 @jwt_required()
 def logout_endpoint():
-    """
-    Endpoint pour la déconnexion de l'utilisateur.
-
-    Révoque le token d'accès de l'utilisateur actuel.
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Déconnexion réussie"
-    }
-
-    Retourne:
-        Réponse JSON avec un message de succès ou un message d'erreur.
-    """
     try:
         service_jwt.revoke_token(get_jwt()["jti"], get_jwt_identity())
         return create_json_response(
@@ -186,11 +127,6 @@ def logout_endpoint():
     ENUM_ENDPOINT_AUTH.REQUEST_RESET_PASSWORD.value, methods=[ENUM_METHODS.POST.value]
 )
 def request_reset_password():
-    """
-    Endpoint pour demander la réinitialisation du mot de passe.
-
-    Reçoit l'email de l'utilisateur et envoie un email avec un lien de réinitialisation contenant un token JWT.
-    """
     try:
         data = ResetPasswordRequestSchema().load(request.get_json())
         email = data["email"]
@@ -228,11 +164,6 @@ def request_reset_password():
 )
 @jwt_required()
 def reset_password():
-    """
-    Endpoint pour réinitialiser le mot de passe.
-
-    Reçoit le token JWT et le nouveau mot de passe, et met à jour le mot de passe de l'utilisateur.
-    """
     try:
         data = ResetPasswordSchema().load(request.get_json())
         new_password = data["password"]
@@ -291,21 +222,6 @@ def validate_reset_token():
 )
 @jwt_required(refresh=True)
 def refresh_endpoint():
-    """
-    Endpoint pour rafraîchir le token d'accès.
-
-    Génère un nouveau token d'accès pour l'utilisateur actuel.
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Le token a bien été rafraîchi",
-        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
-    }
-
-    Retourne:
-        Réponse JSON avec un message de succès ou un message d'erreur.
-    """
     try:
         access_token = service_auth.getNewAccessToken(get_jwt_identity())
         return create_json_response(
@@ -328,20 +244,6 @@ def refresh_endpoint():
 )
 @jwt_required()
 def revoke_access_endpoint():
-    """
-    Endpoint pour révoquer le token d'accès.
-
-    Révoque le token d'accès de l'utilisateur actuel.
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Le token d'accès a été révoqué"
-    }
-
-    Retourne:
-        Réponse JSON avec un message de succès ou un message d'erreur.
-    """
     try:
         service_jwt.revoke_token(get_jwt()["jti"], get_jwt_identity())
         return create_json_response(
@@ -361,20 +263,6 @@ def revoke_access_endpoint():
 )
 @jwt_required(refresh=True)
 def revoke_refresh_token_endpoint():
-    """
-    Endpoint pour révoquer le token de rafraîchissement.
-
-    Révoque le token de rafraîchissement de l'utilisateur actuel.
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Le token de rafraîchissement a été révoqué"
-    }
-
-    Retourne:
-        Réponse JSON avec un message de succès ou un message d'erreur.
-    """
     try:
         service_jwt.revoke_token(get_jwt()["jti"], get_jwt_identity())
         return create_json_response(

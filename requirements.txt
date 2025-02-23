@@ -10,7 +10,6 @@ flask-limiter
 tensorflow
 numpy
 pillow
-opencv-python
 scikit-learn
 mongoengine
 redis
@@ -25,3 +24,13 @@ mtcnn
 opencv-python 
 realesrgan 
 basicsr
+torch
+torchvision
+facenet-pytorch
+flask-socketio 
+eventlet 
+ultralytics
+gevent 
+gevent-websocket
+eventlet
+timm

@@ -3,12 +3,6 @@ from werkzeug.utils import secure_filename
 
 
 class PredictRequestSchema(Schema):
-    """
-    Schéma de validation pour les requêtes de prédiction de modèle.
-
-    Accepte un fichier image envoyé via FormData.
-    """
-
     image = fields.Field(
         required=True,
         error_messages={

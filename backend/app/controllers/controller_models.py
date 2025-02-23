@@ -9,33 +9,12 @@ from backend.app.core.const.enum import (
 from backend.app.services.models_service import Service_MODEL
 from marshmallow import ValidationError
 
+
 bp_model = Blueprint(ENUM_BLUEPRINT_ID.MODEL.value, __name__)
 
 
 @bp_model.route(ENUM_ENDPOINT_MODEL.PREDICT.value, methods=[ENUM_METHODS.POST.value])
 def predict(typeModel: str):
-    """
-    Endpoint pour la prédiction de modèle.
-
-    Valide les données d'entrée et retourne le résultat de la prédiction.
-
-    Args:
-        typeModel (str): Type de modèle à utiliser pour la prédiction.
-
-    Exemple de payload d'entrée:
-    {
-        "image": "base64_encoded_image_string"
-    }
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Résultat de la prédiction"
-    }
-
-    Retourne:
-        Réponse JSON avec le résultat de la prédiction ou un message d'erreur.
-    """
     try:
         if "image" not in request.files:
             return create_json_response(
@@ -46,7 +25,7 @@ def predict(typeModel: str):
 
         image_file = request.files["image"]
         model = Service_MODEL(typeModel)
-        message = model.get_prediction(image_file)
+        message = model.handle_prediction(image_file)
         return create_json_response(status="success", message=message)
     except ValidationError as e:
         create_json_response(

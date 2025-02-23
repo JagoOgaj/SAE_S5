@@ -46,7 +46,10 @@ class ENUM_MODELS_ENV(e):
     PATH_GENDER_AGE_MODEL: str = "PATH_GENDER_AGE_MODEL"
     PATH_GENDER_MODEL: str = "PATH_GENGER_MODEL"
     PATH_GENDER_AGE_FINETUNING: str = "PATH_GENDER_AGE_FINETUNING"
-    PATH_REAL_ESGRAN: str = "PATH_REAL_ESGRAN"
+    PATH_AGE_ETHNIE_MODEL: str = "PATH_AGE_ETHNIE_MODEL"
+    PATH_GENDER_ETHNIE_MODEL: str = "PATH_GENDER_ETHNIE_MODEL"
+    PATH_ETHNIE_MODEL: str = "PATH_ETHNIE_MODEL"
+    PATH_YOLO: str = "PATH_YOLO"
 
 
 ############################################################
@@ -195,6 +198,17 @@ class ENUM_RESET_URL(e):
     LOCAL: str = "http://localhost:4200/passwordforgot?token="
 
 
+class ENUM_CLASSES(e):
+    ETHNICITY: list[str] = [
+        "européenne",
+        "africaine",
+        "asiatique",
+        "sud-asiatique",
+        "inconue",
+    ]
+    CLASS_NAMES_GENDER: dict[int, str] = {0: "Homme", 1: "Femme"}
+
+
 ############################################################
 #                                                          #
 #                       Schema Enum                        #
@@ -223,3 +237,4 @@ class ENUM_MODELS_TYPE(e):
     GENDER_AND_AGE_SCRATCH: str = "gas"
     GENDER_AND_AGE_TRANSFER: str = "gat"
     WEBCAM_REAL_TIME_VISION: str = "wrtv"
+    ETHNIE_AGE_GENDER_TRANSFER: str = "eagt"

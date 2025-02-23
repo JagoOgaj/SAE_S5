@@ -1,7 +1,6 @@
 import os
 from flask import Flask, request, send_from_directory
 from dotenv import load_dotenv
-from datetime import timedelta
 from backend.app.core import (
     ENUM_DB_ENV,
     ENUM_FLASK_ENV,
@@ -24,6 +23,7 @@ from werkzeug.exceptions import (
     Unauthorized,
     MethodNotAllowed,
 )
+from flask_socketio import SocketIO
 from backend.app.core import create_json_response, get_client_info
 
 load_dotenv()
@@ -193,4 +193,4 @@ class App:
         return app
 
 
-app: Flask = App.create_app()
+app = App.create_app()

@@ -30,37 +30,6 @@ bp_user = Blueprint(ENUM_BLUEPRINT_ID.USER.value, __name__)
 )
 @jwt_required()
 def get_conversations():
-    """
-    Endpoint pour récupérer les conversations de l'utilisateur.
-
-    Récupère les conversations de l'utilisateur actuel avec pagination.
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Conversations récupérées avec succès",
-        "data": {
-            "Aujourd'hui": [
-                {
-                    "id": 1,
-                    "name": "Conversation 1"
-                },
-                ...
-            ],
-            "Hier": [
-                {
-                    "id": 2,
-                    "name": "Conversation 2"
-                },
-                ...
-            ],
-            ...
-        }
-    }
-
-    Retourne:
-        Réponse JSON avec les données des conversations ou un message d'erreur.
-    """
     try:
         curentUserId = get_jwt_identity()
 
@@ -89,23 +58,6 @@ def get_conversations():
 )
 @jwt_required()
 def delete_conversation(conversation_id):
-    """
-    Endpoint pour supprimer une conversation.
-
-    Supprime la conversation spécifiée pour l'utilisateur actuel.
-
-    Args:
-        idConversation (int): ID de la conversation à supprimer.
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Conversation et toutes ses données ont été supprimées avec succès"
-    }
-
-    Retourne:
-        Réponse JSON avec un message de succès ou un message d'erreur.
-    """
     try:
         curentUserId = get_jwt_identity()
 
@@ -165,42 +117,6 @@ def delete_conversation(conversation_id):
 )
 @jwt_required()
 def create_conversation():
-    """
-    Endpoint pour créer une nouvelle conversation.
-
-    Crée une nouvelle conversation pour l'utilisateur actuel.
-
-    Exemple de payload d'entrée:
-    {
-        "id": 1,
-        "user_id": 1,
-        "name": "First Conversation",
-        "created_at": "2025-01-25T12:05:00Z",
-        "updated_at": "2025-01-25T12:10:00Z",
-        "messages": [
-            {
-                "type": "user",
-                "image": "base64_encoded_image_data",
-                "content": null,
-                "created_at": "2025-01-25T12:05:30Z"
-            },
-            {
-                "type": "ia",
-                "content": "Hello, how can I assist you?",
-                "image": null,
-                "created_at": "2025-01-25T12:06:00Z"
-            }
-        ]
-    }
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Conversation créée avec succès"
-    }
-
-    Retourne:
-        Réponse JSON avec un message de succès ou un message d'erreur.
-    """
     try:
         curentUserId = get_jwt_identity()
         data = ConversationSchema().load(request.get_json())
@@ -235,41 +151,6 @@ def create_conversation():
 )
 @jwt_required()
 def update_conversation(conversation_id):
-    """
-    Endpoint pour mettre à jour une conversation existante.
-
-    Met à jour les détails de la conversation spécifiée pour l'utilisateur actuel.
-
-    Args:
-        idConversation (int): ID de la conversation à mettre à jour.
-
-    Exemple de payload d'entrée:
-    {
-        "name": "Conversation Mise à Jour",
-        "messages": [
-            {
-                "message_type": "user_message",
-                "content": "Message mis à jour",
-                "created_at": "2023-01-01T00:00:00Z"
-            }
-        ],
-        "images": [
-            {
-                "image_data": "base64_encoded_image_string",
-                "created_at": "2023-01-01T00:00:00Z"
-            }
-        ]
-    }
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Conversation mise à jour avec succès"
-    }
-
-    Retourne:
-        Réponse JSON avec un message de succès ou un message d'erreur.
-    """
     try:
         curentUserId = get_jwt_identity()
         conversationUpdatedSchema = UpdatedConversation()
@@ -328,35 +209,6 @@ def update_conversation(conversation_id):
 )
 @jwt_required()
 def get_conversation(conversation_id):
-    """
-    Endpoint pour récupérer une conversation spécifique.
-
-    Récupère les détails de la conversation spécifiée pour l'utilisateur actuel.
-
-    Args:
-        idConversation (int): ID de la conversation à récupérer.
-
-    Exemple de payload de sortie:
-    {
-        "status": "success",
-        "message": "Conversation récupérée avec succès",
-        "data": {
-            "id": 1,
-            "name": "Conversation 1",
-            "messages": [
-                {
-                    "id": 1,
-                    "content": "Message 1",
-                    "created_at": "2023-01-01T00:00:00Z"
-                },
-                ...
-            ]
-        }
-    }
-
-    Retourne:
-        Réponse JSON avec les détails de la conversation ou un message d'erreur.
-    """
     try:
         curentUserId = get_jwt_identity()
 
