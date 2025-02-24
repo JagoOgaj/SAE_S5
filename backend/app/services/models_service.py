@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 from PIL import Image
 import face_recognition
 import io
-import cv2
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
@@ -225,16 +224,9 @@ class Service_MODEL:
         return message
 
     def loadImageFile(self, imageFile) -> list:
-        MAX_WIDTH, MAX_HEIGHT = 2000, 2000
 
         image = Image.open(io.BytesIO(imageFile.read()))
-
-        if image.width > MAX_WIDTH or image.height > MAX_HEIGHT:
-            return (
-                f"L'image est trop grande ({image.width}x{image.height}px). "
-                f"Veuillez utiliser une image de {MAX_WIDTH}x{MAX_HEIGHT}px maximum."
-            )
-
+        
         face_locations = self.detect_faces(image)
 
         if not face_locations:
@@ -243,7 +235,6 @@ class Service_MODEL:
         return self.crop_faces(image, face_locations)
 
     def get_gender_average(self, gender_results):
-        """Calculer la moyenne des genres (s'il y a des genres mixtes, on peut utiliser un score de probabilité)."""
         female_count = gender_results.count("Femme")
         male_count = gender_results.count("Homme")
         total = female_count + male_count
@@ -264,29 +255,6 @@ class Service_MODEL:
             image = image.convert("RGB")
 
         return image
-
-    def enhance_image(self, face_image):
-        """Améliore la qualité de l'image : réduction du bruit, augmentation des détails, correction de contraste."""
-        image = np.array(face_image)
-
-        denoised = cv2.fastNlMeansDenoisingColored(image, None, 10, 10, 7, 21)
-
-        lab = cv2.cvtColor(denoised, cv2.COLOR_RGB2LAB)
-        l, a, b = cv2.split(lab)
-        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-        l = clahe.apply(l)
-        lab = cv2.merge((l, a, b))
-        contrast_enhanced = cv2.cvtColor(lab, cv2.COLOR_LAB2RGB)
-
-        enhanced = cv2.detailEnhance(contrast_enhanced, sigma_s=10, sigma_r=0.15)
-
-        gaussian_blurred = cv2.GaussianBlur(enhanced, (9, 9), 10.0)
-        sharpened = cv2.addWeighted(enhanced, 1.5, gaussian_blurred, -0.5, 0)
-
-        gamma = 1.2
-        gamma_corrected = np.array(255 * (sharpened / 255) ** gamma, dtype="uint8")
-
-        return Image.fromarray(gamma_corrected)
 
     def detect_faces(self, image):
         image = self.ensure_8bit(image)
@@ -314,7 +282,6 @@ class Service_MODEL:
 
             face_image = image.crop((new_left, new_top, new_right, new_bottom))
             face_image = face_image.resize(target_size, Image.Resampling.LANCZOS)
-            face_image = self.enhance_image(face_image)
 
             cropped_faces.append(face_image)
 
