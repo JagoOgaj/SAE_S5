@@ -303,9 +303,10 @@ class Service_MODEL:
         return np.expand_dims(np.expand_dims(image_array, axis=0), axis=-1)
 
     def preprocess_gender_age_transfer(self, face_image):
-        image_rgb = face_image.convert("RGB").resize((64, 64))
-        image_array = np.array(image_rgb) / 255.0
-        return np.expand_dims(image_array, axis=0)
+        image = face_image.resize((180, 180))
+        if image.mode == "RGBA":
+            image = image.convert('RGB')
+        return np.array(image)
 
     def predict_gender(self, face_image):
         processed_image = self.preprocess_gender(face_image)
@@ -325,11 +326,10 @@ class Service_MODEL:
         return gender, age
 
     def predict_gender_age_transfer(self, face_image):
-        processed_image = self.preprocess_gender_age_transfer(face_image)
-        prediction = self._model.predict(processed_image)
-        gender = "Homme" if prediction[0][0] < 0.5 else "Femme"
-        age = int(round(float(prediction[1][0]) * 100))
-        return gender, age
+        image = self.preprocess_gender_age_transfer(face_image)
+        prediction = self._model.predict(np.expand_dims(image, axis=0))
+        age, gender = round(prediction[0][0][0]), round(prediction[1][0][0])
+        return ENUM_CLASSES.CLASS_NAMES_GENDER.value.get(gender), age
 
     def getFeaturesTransfor(self) -> tuple:
 
