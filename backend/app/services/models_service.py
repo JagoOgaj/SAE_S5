@@ -226,7 +226,7 @@ class Service_MODEL:
     def loadImageFile(self, imageFile) -> list:
 
         image = Image.open(io.BytesIO(imageFile.read()))
-        
+
         face_locations = self.detect_faces(image)
 
         if not face_locations:
@@ -305,7 +305,7 @@ class Service_MODEL:
     def preprocess_gender_age_transfer(self, face_image):
         image = face_image.resize((180, 180))
         if image.mode == "RGBA":
-            image = image.convert('RGB')
+            image = image.convert("RGB")
         return np.array(image)
 
     def predict_gender(self, face_image):
