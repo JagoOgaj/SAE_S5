@@ -137,12 +137,21 @@ class Service_MODEL:
                 )
 
         if avg_age is not None:
-            if num_faces == 1:
-                message += f"Elle semble avoir environ {avg_age} ans.\n"
-            else:
+            if num_faces == 1 :    
+                message += (
+                    "Voici la tranche d'âge que j'ai trouvée : "
+                    + self.categorize_age(age_results[0])
+                    + ".\n"
+                )
+            else :
+                message += (
+                    "Voici les tranches d'âge que j'ai trouvées : "
+                    + ", ".join(map(self.categorize_age, age_results))
+                    + ".\n"
+                )          
                 message += (
                     f"L'âge moyen des visages détectés est d'environ {avg_age} ans.\n"
-                )
+                )  
 
         if len(gender_results) > 1:
             message += (
@@ -150,6 +159,30 @@ class Service_MODEL:
             )
 
         return message
+
+    def categorize_age(self, age):
+        if age <= 10:
+            return "0 - 10 ans"
+        elif age <= 20:
+            return "11 - 20 ans"
+        elif age <= 30:
+            return "21 - 30 ans"
+        elif age <= 40:
+            return "31 - 40 ans"
+        elif age <= 50:
+            return "41 - 50 ans"
+        elif age <= 60:
+            return "51 - 60 ans"
+        elif age <= 70:
+            return "61 - 70 ans"
+        elif age <= 80:
+            return "71 - 80 ans"
+        elif age <= 90:
+            return "81 - 90 ans"
+        elif age <= 100:
+            return "91 - 100 ans"
+        else:
+            return "101 - 120 ans"
 
     def get_prediction_with_ethnicity(self: Self, imageFile) -> str:
         cropped_faces = self.loadImageFile(imageFile)
@@ -200,13 +233,23 @@ class Service_MODEL:
                     "Voici les genres détectés : " + ", ".join(gender_results) + ".\n"
                 )
 
+       
         if avg_age is not None:
-            if num_faces == 1:
-                message += f"Elle semble avoir environ {avg_age} ans.\n"
-            else:
+            if num_faces == 1 :    
+                message += (
+                    "Voici la tranche d'âge que j'ai trouvée : "
+                    + self.categorize_age(age_results[0])
+                    + ".\n"
+                )
+            else :
+                message += (
+                    "Voici les tranches d'âge que j'ai trouvées : "
+                    + ", ".join(map(self.categorize_age, age_results))
+                    + ".\n"
+                )          
                 message += (
                     f"L'âge moyen des visages détectés est d'environ {avg_age} ans.\n"
-                )
+                )  
 
         if ethnicity_results:
             if num_faces == 1:
@@ -268,6 +311,14 @@ class Service_MODEL:
         cropped_faces = []
         img_width, img_height = image.size
 
+        if len(face_locations) == 1:
+            top, right, bottom, left = face_locations[0]
+            face_width = right - left
+            face_height = bottom - top
+            if img_width == 200 and img_height == 200:
+                if 120 <= face_width <= 160 and 120 <= face_height <= 160:
+                    return [image]
+
         for _, (top, right, bottom, left) in enumerate(face_locations):
             face_width = right - left
             face_height = bottom - top
@@ -298,9 +349,10 @@ class Service_MODEL:
         return np.expand_dims(np.expand_dims(image_array, axis=0), axis=-1)
 
     def preprocess_gender_age(self, face_image):
-        image_gray = face_image.convert("L").resize((128, 128))
+        image_gray = face_image.convert("RGB").resize((200, 200))
         image_array = np.array(image_gray) / 255.0
-        return np.expand_dims(np.expand_dims(image_array, axis=0), axis=-1)
+        image_array = np.expand_dims(image_array, axis=0)
+        return image_array
 
     def preprocess_gender_age_transfer(self, face_image):
         image = face_image.resize((180, 180))
@@ -316,14 +368,16 @@ class Service_MODEL:
     def predict_age(self, face_image):
         processed_image = self.preprocess_age(face_image)
         prediction = self._model.predict(processed_image)
-        return int(round(prediction[0][0] * 100)), float(prediction[0][0])
+        return int(round(prediction[0][0] * 116)), float(prediction[0][0])
 
     def predict_gender_age(self, face_image):
         processed_image = self.preprocess_gender_age(face_image)
-        prediction = self._model.predict(processed_image)
-        gender = "Homme" if prediction[0][0] < 0.5 else "Femme"
-        age = int(round(float(prediction[1][0])))
-        return gender, age
+        gender_age_prediction = self._model.predict(processed_image)
+        predicted_gender = ENUM_CLASSES.CLASS_NAMES_GENDER.value[
+            round(gender_age_prediction[0][0][0])
+        ]
+        predicted_age = round(gender_age_prediction[1][0][0])
+        return predicted_gender, predicted_age
 
     def predict_gender_age_transfer(self, face_image):
         image = self.preprocess_gender_age_transfer(face_image)
