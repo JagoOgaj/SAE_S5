@@ -49,9 +49,7 @@ class Service_MODEL:
                     str(os.environ.get(ENUM_MODELS_ENV.PATH_GENDER_AGE_MODEL.value))
                 )
             case ENUM_MODELS_TYPE.GENDER_SCRATCH.value:
-                self._model = tf.keras.models.load_model(
-                    str(os.environ.get(ENUM_MODELS_ENV.PATH_GENDER_MODEL.value))
-                )
+                self.initGenderScratch()
             case ENUM_MODELS_TYPE.AGE_SCRATCH.value:
                 self._model = tf.keras.models.load_model(
                     str(os.environ.get(ENUM_MODELS_ENV.PATH_AGE_MODEL.value))
@@ -93,6 +91,11 @@ class Service_MODEL:
                 )
 
         return "Inconnu", 0.0
+
+    def initGenderScratch(self) -> None:
+        self._model = tf.keras.models.load_model(
+                str(os.environ.get(ENUM_MODELS_ENV.PATH_GENDER_MODEL.value))
+        )
 
     def get_prediction(self: Self, imageFile) -> str:
         cropped_faces = self.loadImageFile(imageFile)
@@ -139,14 +142,14 @@ class Service_MODEL:
         if avg_age is not None:
             if num_faces == 1 :    
                 message += (
-                    "Voici la tranche d'âge que j'ai trouvée : "
+                    "Voici la tranche d'âge que j'ai trouvée : \n"
                     + self.categorize_age(age_results[0])
                     + ".\n"
                 )
             else :
                 message += (
-                    "Voici les tranches d'âge que j'ai trouvées : "
-                    + ", ".join(map(self.categorize_age, age_results))
+                    "Voici les tranches d'âge que j'ai trouvées : \n" +
+                    ", ".join(map(self.categorize_age, age_results))
                     + ".\n"
                 )          
                 message += (
@@ -207,6 +210,7 @@ class Service_MODEL:
 
             gender_pred, _ = self.predict_gender_yolo(face_pil)
             if gender_pred == "Inconnu":
+                self.initGenderScratch()
                 gender_pred, _ = self.predict_gender(face)
             gender_results.append(gender_pred)
 
@@ -237,14 +241,14 @@ class Service_MODEL:
         if avg_age is not None:
             if num_faces == 1 :    
                 message += (
-                    "Voici la tranche d'âge que j'ai trouvée : "
+                    "Voici la tranche d'âge que j'ai trouvée : \n"
                     + self.categorize_age(age_results[0])
                     + ".\n"
                 )
             else :
                 message += (
-                    "Voici les tranches d'âge que j'ai trouvées : "
-                    + ", ".join(map(self.categorize_age, age_results))
+                    "Voici les tranches d'âge que j'ai trouvées : \n" +
+                    ", ".join(map(self.categorize_age, age_results))
                     + ".\n"
                 )          
                 message += (
